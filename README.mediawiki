@@ -1,0 +1,3 @@
+== Extend CodeEditor to handle GPML code ==
+
+Adapt the CodeEditor to handle the GPML representation of Pathways content for WikiPathways.

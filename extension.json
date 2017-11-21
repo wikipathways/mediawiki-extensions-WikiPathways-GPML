@@ -1,0 +1,31 @@
+{
+	"name": "WikiPathwaysGPML",
+	"version": "0.01",
+	"author": [
+		"[http://nichework.com Mark A. Hershberger]"
+	],
+	"url": "https://www.wikipathways.org",
+	"descriptionmsg": "wp-contenteditor-desc",
+	"license-name": "GPL-3.0+",
+	"type": "other",
+	"MessagesDirs": {
+		"WikiPathways\\GPML": "i18n"
+	},
+	"callback": "WikiPathways\\GPML\\Hook::onRegistration",
+	"Hooks": {
+		"CodeEditorGetPageLanguage": "WikiPathways\\GPML\\Hook::onCodeEditorGetPageLanguage",
+		"ContentHandlerForModelID": "WikiPathays\\GPML\\Hook::onContentHandlerForModelID"
+	},
+	"ContentHandlers": {
+		"gpml": "WikiPathways\\GPML\\ContentHandler"
+	},
+	"SyntaxHighlightModels": {
+		"xml": "xml"
+	},
+	"AutoloadClasses": {
+		"WikiPathways\\GPML\\Hooks": "src/Hooks.php",
+		"WikiPathways\\GPML\\ContentHandler": "src/ContentHandler.php",
+		"WikiPathways\\GPML\\Content": "src/Content.php"
+	},
+	"manifest_version": 2
+}
