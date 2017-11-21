@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Copyright (C) 2016  Mark A. Hershberger
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,14 @@
  *
  * @file
  * @ingroup Extensions
+ * @author Mark A. Hershberger
  */
 
 namespace WikiPathways\GPML;
 
 use Title;
 
-class Hooks {
+class Hook {
     static function onCodeEditorGetPageLanguage(
         Title $title, &$lang, $model = "", $format = ""
     ) {
@@ -49,10 +50,14 @@ class Hooks {
         }
         global $wgContentHanders;
         $wgContentHanders[CONTENT_MODEL_GPML] = 'WikiPathways\GPML\ContentHandler';
+
+        # Temporary back compat
+        $wgContentHanders["pathway"] = 'WikiPathways\GPML\ContentHandler';
     }
 
     static function onContentHandlerForModelID( $modeName, &$handler ) {
-        if ( $modeName === CONTENT_MODEL_GPML ) {
+        if ( $modeName === CONTENT_MODEL_GPML
+             || $modeName === "pathway" ) { # Temporary backcompat
             $handler = 'WikiPathways\GPML\ContentHandler';
             return false;
         }

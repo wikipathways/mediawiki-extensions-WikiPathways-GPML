@@ -14,7 +14,7 @@
 	"callback": "WikiPathways\\GPML\\Hook::onRegistration",
 	"Hooks": {
 		"CodeEditorGetPageLanguage": "WikiPathways\\GPML\\Hook::onCodeEditorGetPageLanguage",
-		"ContentHandlerForModelID": "WikiPathays\\GPML\\Hook::onContentHandlerForModelID"
+		"ContentHandlerForModelID": "WikiPathways\\GPML\\Hook::onContentHandlerForModelID"
 	},
 	"ContentHandlers": {
 		"gpml": "WikiPathways\\GPML\\ContentHandler"
@@ -23,7 +23,7 @@
 		"xml": "xml"
 	},
 	"AutoloadClasses": {
-		"WikiPathways\\GPML\\Hooks": "src/Hooks.php",
+		"WikiPathways\\GPML\\Hook": "src/Hook.php",
 		"WikiPathways\\GPML\\ContentHandler": "src/ContentHandler.php",
 		"WikiPathways\\GPML\\Content": "src/Content.php"
 	},
