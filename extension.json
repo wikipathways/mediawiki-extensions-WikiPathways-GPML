@@ -16,8 +16,29 @@
 		"CodeEditorGetPageLanguage": "WikiPathways\\GPML\\Hook::onCodeEditorGetPageLanguage",
 		"ContentHandlerForModelID": "WikiPathways\\GPML\\Hook::onContentHandlerForModelID"
 	},
+	"namespaces": [
+		{
+			"id": 102,
+			"constant": "NS_PATHWAY",
+			"name": "Pathway",
+			"subpages": false,
+			"content": true,
+			"defaultcontentmodel": "gpml",
+			"protection": "pathway-edit"
+		},
+		{
+			"id": 103,
+			"constant": "NS_PATHWAY",
+			"name": "Pathway",
+			"subpages": false,
+			"content": true,
+			"defaultcontentmodel": "wikitext",
+			"protection": "pathway-edit"
+		}
+	],
 	"ContentHandlers": {
-		"gpml": "WikiPathways\\GPML\\ContentHandler"
+		"gpml": "WikiPathways\\GPML\\ContentHandler",
+		"pathway": "WikiPathways\\GPML\\ContentHandler"
 	},
 	"SyntaxHighlightModels": {
 		"xml": "xml"
