@@ -58,7 +58,7 @@ class Hook {
     static function onContentHandlerForModelID( $modeName, &$handler ) {
         if ( $modeName === CONTENT_MODEL_GPML
              || $modeName === "pathway" ) { # Temporary backcompat
-            $handler = 'WikiPathways\GPML\ContentHandler';
+            $handler = new ContentHandler;
             return false;
         }
         return true;

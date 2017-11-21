@@ -20,12 +20,17 @@
  * @author Mark A. Hershberger
  */
 
-namespace WikiPathways\\GPML;
+namespace WikiPathways\GPML;
+
+use TextContent;
+use ParserOptions;
+use Title;
+use User;
 
 /**
  * Content for Pathway pages
  */
-class Content extends \TextContent {
+class Content extends TextContent {
 
 	/**
 	 * @var bool|Title|null
@@ -48,9 +53,9 @@ class Content extends \TextContent {
 	 * @param User $user
 	 * @param ParserOptions $popts
 	 *
-	 * @return WikiPathways\\ContentHandler\Content
+	 * @return WikiPathways\ContentHandler\Content
 	 */
-	public function preSaveTransform( \Title $title, \User $user, \ParserOptions $popts ) {
+	public function preSaveTransform( Title $title, User $user, ParserOptions $popts ) {
 		global $wgParser;
 		// @todo Make pre-save transformation optional for script pages
 		// See bug #32858
