@@ -33,7 +33,7 @@ class Hook {
 
         if ( $wgCodeEditorEnableCore ) {
             if ( $title->hasContentModel( CONTENT_MODEL_GPML ) ) {
-                $lang = CONTENT_FORMAT_GPML;
+                $lang = "xml";
                 return false;
             }
         }

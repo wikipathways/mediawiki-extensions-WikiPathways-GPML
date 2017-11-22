@@ -8,6 +8,12 @@
 	"descriptionmsg": "wp-contenteditor-desc",
 	"license-name": "GPL-3.0+",
 	"type": "other",
+	"requires": {
+		"MediaWiki": ">= 1.29.0",
+		"extensions": {
+			"CodeEditor": "*"
+		}
+	},
 	"MessagesDirs": {
 		"WikiPathways\\GPML": "i18n"
 	},
@@ -28,12 +34,12 @@
 		},
 		{
 			"id": 103,
-			"constant": "NS_PATHWAY",
-			"name": "Pathway",
+			"constant": "NS_PATHWAY_TALK",
+			"name": "Pathway_talk",
 			"subpages": false,
 			"content": true,
 			"defaultcontentmodel": "wikitext",
-			"protection": "pathway-edit"
+			"protection": "pathway-talk-edit"
 		}
 	],
 	"ContentHandlers": {
@@ -47,6 +53,9 @@
 		"WikiPathways\\GPML\\Hook": "src/Hook.php",
 		"WikiPathways\\GPML\\ContentHandler": "src/ContentHandler.php",
 		"WikiPathways\\GPML\\Content": "src/Content.php"
+	},
+	"DefaultUserOptions": {
+		"usebetatoolbar": true
 	},
 	"manifest_version": 2
 }
