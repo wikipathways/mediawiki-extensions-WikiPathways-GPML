@@ -49,9 +49,9 @@ class Content extends TextContent {
 	 * Returns a Content object with pre-save transformations applied using
 	 * Parser::preSaveTransform().
 	 *
-	 * @param Title $title
-	 * @param User $user
-	 * @param ParserOptions $popts
+	 * @param Title $title of the page
+	 * @param User $user who is editing
+	 * @param ParserOptions $popts for parsing
 	 *
 	 * @return WikiPathways\ContentHandler\Content
 	 */
@@ -82,7 +82,7 @@ class Content extends TextContent {
 	 * If this page is a redirect, return the content
 	 * if it should redirect to $target instead
 	 *
-	 * @param Title $target
+	 * @param Title $target to update
 	 * @return WikiPathways\ContentHandler\Content
 	 */
 	public function updateRedirect( Title $target ) {

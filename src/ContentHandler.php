@@ -28,7 +28,7 @@ namespace WikiPathways\GPML;
 class ContentHandler extends \CodeContentHandler {
 
 	public function __construct() {
-		parent::__construct( CONTENT_MODEL_GPML, [ CONTENT_FORMAT_GPML ]  );
+		parent::__construct( CONTENT_MODEL_GPML, [ CONTENT_FORMAT_GPML ] );
 	}
 
 	/**
