@@ -25,42 +25,59 @@ namespace WikiPathways\GPML;
 use Title;
 
 class Hook {
-    static function onCodeEditorGetPageLanguage(
-        Title $title, &$lang, $model = "", $format = ""
-    ) {
-        global $wgCodeEditorEnableCore;
+	/**
+	 * Take care of initializing stuff for this extension
+	 */
+	static function onRegistration() {
+		if ( !defined( 'CONTENT_MODEL_GPML' ) ) {
+			define( 'CONTENT_MODEL_GPML', 'gpml' );
+		}
+		if ( !defined( 'CONTENT_FORMAT_GPML' ) ) {
+			define( 'CONTENT_FORMAT_GPML', 'gpml' );
+		}
 
+		// FIXME this shim is in the global context, see
+		// WikiPathways.php
+		// FIX would be to write an API call (or just
+		// fit the information this produces into GPML).
+		global $wgAjaxExportList;
+		$wgAjaxExportList[] = "jsGetAuthors";
+	}
 
-        if ( $wgCodeEditorEnableCore ) {
-            if ( $title->hasContentModel( CONTENT_MODEL_GPML ) ) {
-                $lang = "xml";
-                return false;
-            }
-        }
+	/**
+	 * Hook to tell CodeEditor what this page should be edited with.
+	 *
+	 * @param Title $title of page to examine
+	 * @param string &$lang to use for page
+	 * @param string $model ContentModel of page
+	 * @param string $format ContentFormat for page
+	 *
+	 * @return bool false when GPML is given.
+	 */
+	static function onCodeEditorGetPageLanguage(
+		Title $title, &$lang, $model = "", $format = ""
+	) {
+		if ( $model === CONTENT_MODEL_GPML ) {
+			$lang = "xml";
+			return false;
+		}
+	}
 
-        return true;
-    }
-
-    static function onRegistration() {
-        if ( !defined( 'CONTENT_MODEL_GPML' ) ) {
-            define( 'CONTENT_MODEL_GPML', 'gpml' );
-        }
-        if ( !defined( 'CONTENT_FORMAT_GPML' ) ) {
-            define( 'CONTENT_FORMAT_GPML', 'gpml' );
-        }
-        global $wgContentHanders;
-        $wgContentHanders[CONTENT_MODEL_GPML] = 'WikiPathways\GPML\ContentHandler';
-
-        # Temporary back compat
-        $wgContentHanders["pathway"] = 'WikiPathways\GPML\ContentHandler';
-    }
-
-    static function onContentHandlerForModelID( $modeName, &$handler ) {
-        if ( $modeName === CONTENT_MODEL_GPML
-             || $modeName === "pathway" ) { # Temporary backcompat
-            $handler = new ContentHandler;
-            return false;
-        }
-        return true;
-    }
+	/**
+	 * Provide a content handler for this content model
+	 *
+	 * @param string $modelName the content model we have
+	 * @param ContentHandler &$handler the handler we provide if we
+	 *     know what to do with the model given.
+	 *
+	 * @return bool false when GPML is given
+	 */
+	static function onContentHandlerForModelID( $modelName, &$handler ) {
+		if ( $modelName === CONTENT_MODEL_GPML
+			 # FIXME Temporary backcompat
+			 || $modelName === "pathway" ) {
+			$handler = new ContentHandler;
+			return false;
+		}
+	}
 }

@@ -1,0 +1,11 @@
+div.thumbinner {
+	padding: 3px 6px 30px 3px;
+	width: 100%;
+}
+div.thumbinner div.internal {
+	margin: auto;
+	align: center;
+}
+div.thumbinner div.internal {
+	width: 100%;
+}
