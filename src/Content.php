@@ -133,17 +133,16 @@ class Content extends TextContent {
 	 */
 	protected function  renderPathway() {
 		global $wgContLang, $wgUser;
-		//function makePvjsObj( $pathway, $latestRevision=0, $label = '', $href = '', $alt, $align = 'right', $id = 'thumb', $boxwidth = 180, $boxheight=false, $framed=false ) {
 		$editorState = 'disabled';
 
-		$gpml = $this->pathway->getFileURL(FILETYPE_GPML);
+		$gpml = $this->pathway->getFileURL( FILETYPE_GPML );
 		$imgURL = $this->pathway->getImage()->getURL();
 
 		$identifier = $this->pathway->getIdentifier();
 		$version = $this->pathway->getLatestRevision();
 
 		$textalign = $wgContLang->isRTL() ? ' style="text-align:right"' : '';
-		$align = "right";
+		$align = "center";
 		$thumbUrl = '\$this->pathway->getImage()->getViewURL();'; #throws error atm
 		$label = $this->getLabel();
 		$alt = "ALT-TEXT";
@@ -164,8 +163,8 @@ class Content extends TextContent {
 		$editButton = '';
 		if ($wgUser->isLoggedIn() && $this->pathway->getTitleObject()->userCan('edit')) {
 			$identifier = $this->pathway->getIdentifier();
-			$version = $this->pathway->getLatestRevision(); 
-			$editButton = '<div style="float:left;">' . 
+			$version = $this->pathway->getLatestRevision();
+			$editButton = '<div style="float:left;">' .
 						// see http://www.ericmmartin.com/projects/simplemodal/
 						'<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js"></script>' .
 						// this should just be a button, but the button class only works for "a" elements with text inside.
