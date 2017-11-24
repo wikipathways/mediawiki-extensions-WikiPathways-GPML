@@ -158,10 +158,11 @@ class AuthorInfoList {
 	 * @param string $input input
 	 * @param array $argv arguments passed to this parser function
 	 * @param Parser $parser object
+	 * @param PPFrame $frame parent frame
 	 *
 	 * @return string
 	 */
-	public static function render( $input, $argv, $parser ) {
+	public static function render( $input, array $argv, Parser $parser, PPFrame $frame ) {
 		$parser->disableCache();
 
 		if ( isset( $argv["limit"] ) ) {

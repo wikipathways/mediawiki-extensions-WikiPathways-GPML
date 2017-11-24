@@ -45,6 +45,14 @@ class Hook {
 	}
 
 	/**
+	 * Set up parsing functions and the like
+	 * @param Parser &$parser object
+	 */
+	public static function onParserFirstCallInit( Parser &$parser ) {
+		$parser->setHook( "AuthorInfo", "WikiPathways\\GPML\\AuthorInfoList::render" );
+	}
+
+	/**
 	 * Hook to tell CodeEditor what this page should be edited with.
 	 *
 	 * @param Title $title of page to examine
