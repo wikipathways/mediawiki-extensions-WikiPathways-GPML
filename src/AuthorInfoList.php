@@ -15,12 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @author
+ * @author Thomas Kelder <thomaskelder@gmail.com>
+ * @author Alexander Pico <apico@gladstone.ucsf.edu>
  * @author Mark A. Hershberger <mah@nichework.com>
  */
 namespace WikiPathways\GPML;
 
+use AjaxResponse;
 use DOMDocument;
+use Title;
 use User;
 
 class AuthorInfoList {
@@ -30,11 +33,20 @@ class AuthorInfoList {
 
 	private $authors;
 
-	public function __construct( $title, $limit = '', $showBots = false ) {
+	/**
+	 * Constructor
+	 *
+	 * @param Title $title the title being checked
+	 * @param int $limit how many to show
+	 * @param bool $showBots or not
+	 */
+	public function __construct( Title $title, $limit = 0, $showBots = false ) {
 		$this->title = $title;
-		if ( $limit ) { $this->limit = $limit + 1;
+		if ( $limit ) {
+			$this->limit = $limit + 1;
 		}
 		$this->showBots = $showBots;
+		$this->authors = [];
 		$this->load();
 	}
 
@@ -47,14 +59,19 @@ class AuthorInfoList {
 
 		// Get users for page
 		$page_id = $this->title->getArticleId();
-		$query = "SELECT DISTINCT(rev_user) FROM revision WHERE " .
-			"rev_page = {$page_id} $limit";
 
-		$res = $dbr->query( $query );
-		$this->authors = [];
-		while ( $row = $dbr->fetchObject( $res ) ) {
+		// $query = "SELECT DISTINCT(rev_user) FROM revision WHERE " .
+		// "rev_page = {$page_id} $limit";
+
+		$res = $dbr->select(
+			"revision", "rev_user", [ "rev_page" => $page_id ], __METHOD__,
+			[ "DISTINCT", "OFFSET" => 0, "LIMIT" => $this->limit ]
+		);
+		foreach ( $res as $row ) {
 			$user = User::newFromId( $row->rev_user );
-			if ( $user->isAnon() ) { continue; // Skip anonymous users
+			if ( $user->isAnon() ) {
+				// Skip anonymous users
+				continue;
 			}
 			if ( !$user->isAllowed( 'bot' ) || $this->showBots ) {
 				$this->authors[] = new AuthorInfo( $user, $this->title );
@@ -62,8 +79,7 @@ class AuthorInfoList {
 		}
 
 		// Sort the authors by editCount
-		usort( $this->authors, "WikiPathways\\GPML\\AuthorInfo::compareByEdits" );
-		$dbr->freeResult( $res );
+		usort( $this->authors, [ 'WikiPathways\\GPML\\AuthorInfo', "compareByEdits" ] );
 
 		// Place original author in first position
 		$this->originalAuthorFirst();
@@ -74,15 +90,16 @@ class AuthorInfoList {
 	 * @return ordered author list
 	 */
 	public function originalAuthorFirst() {
-				$orderArray = [];
-				foreach ( $this->authors as $a ) {
-						array_push( $orderArray, $a->getFirstEdit() );
-				}
-				   $firstAuthor = $this->authors[array_search( min( $orderArray ), $orderArray )];
+		$orderArray = [];
+		foreach ( $this->authors as $a ) {
+			array_push( $orderArray, $a->getFirstEdit() );
+		}
+		$firstAuthor = $this->authors[array_search( min( $orderArray ), $orderArray )];
 
-						if ( ( $key = array_search( $firstAuthor, $this->authors ) ) !== false ) {
-				unset( $this->authors[$key] );
-			   }
+		$key = array_search( $firstAuthor, $this->authors );
+		if ( $key !== false ) {
+			unset( $this->authors[$key] );
+		}
 		array_unshift( $this->authors, $firstAuthor );
 	}
 
@@ -102,6 +119,7 @@ class AuthorInfoList {
 
 	/**
 	 * Get an XML document containing the author info
+	 * @return DOMDocument
 	 */
 	public function getXml() {
 		$doc = new DOMDocument();
@@ -113,4 +131,55 @@ class AuthorInfoList {
 		}
 		return $doc;
 	}
+
+	/**
+	 * Called from javascript to get the author list.
+	 * @param int $pageId The id of the page to get the authors for.
+	 * @param int $limit Limit the number of authors to query. Leave
+	 *                   empty to get all authors.
+	 * @param bool $includeBots Whether to include users marked as bot.
+	 * @return An xml document containing all authors for the given page
+	 */
+	public static function jsGetAuthors( $pageId, $limit = '', $includeBots = false ) {
+		$title = Title::newFromId( $pageId );
+		if ( $includeBots === 'false' ) {
+			$includeBots = false;
+		}
+		$authorList = new AuthorInfoList( $title, $limit, $includeBots );
+		$doc = $authorList->getXml();
+		$resp = new AjaxResponse( $doc->saveXML() );
+		$resp->setContentType( "text/xml" );
+		return $resp;
+	}
+
+	/**
+	 * Main entry point
+	 *
+	 * @param string $input input
+	 * @param array $argv arguments passed to this parser function
+	 * @param Parser $parser object
+	 *
+	 * @return string
+	 */
+	public static function render( $input, $argv, $parser ) {
+		$parser->disableCache();
+
+		if ( isset( $argv["limit"] ) ) {
+			$limit = htmlentities( $argv["limit"] );
+		} else {
+			$limit = 0;
+		}
+		if ( isset( $argv["bots"] ) ) {
+			$bots = htmlentities( $argv["bots"] );
+		} else {
+			$bots = false;
+		}
+		$parser->getOutput()->addModules( "wpi.AuthorInfo" );
+
+		$id = $parser->getTitle()->getArticleId();
+		return "<div id='authorInfoContainer'></div><script type='text/javascript'>"
+			   . "AuthorInfo.init('authorInfoContainer', '$id', '$limit', '$bots');"
+			   . "</script>";
+	}
+
 }

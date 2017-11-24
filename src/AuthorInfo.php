@@ -14,111 +14,109 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Thomas Kelder <thomaskelder@gmail.com>
+ * @author Alexander Pico <apico@gladstone.ucsf.edu>
+ * @author Mark A. Hershberger <mah@nichework.com>
  */
 namespace WikiPathways\GPML;
 
 use AjaxResponse;
+use DOMDocument;
+use DOMElement;
 use RequestContext;
 use Title;
+use User;
 
 class AuthorInfo {
-
-	public static function render( $input, $argv, $parser ) {
-		$parser->disableCache();
-
-		if ( isset( $argv["limit"] ) ) {
-			$limit = htmlentities( $argv["limit"] );
-		} else {
-			$limit = 0;
-		}
-		if ( isset( $argv["bots"] ) ) {
-			$bots = htmlentities( $argv["bots"] );
-		} else {
-			$bots = false;
-		}
-		$parser->getOutput()->addModules( "wpi.AuthorInfo" );
-
-		$id = $parser->getTitle()->getArticleId();
-		return "<div id='authorInfoContainer'></div><script type='text/javascript'>"
-			   . "AuthorInfo.init('authorInfoContainer', '$id', '$limit', '$bots');"
-			   . "</script>";
-	}
-
-	/**
-	 * Called from javascript to get the author list.
-	 * @param $pageId The id of the page to get the authors for.
-	 * @param $limit Limit the number of authors to query. Leave empty to get all authors.
-	 * @param $includeBots Whether to include users marked as bot.
-	 * @return An xml document containing all authors for the given page
-	 */
-	public static function jsGetAuthors( $pageId, $limit = '', $includeBots = false ) {
-		$title = Title::newFromId( $pageId );
-		if ( $includeBots === 'false' ) { $includeBots = false;
-		}
-		$authorList = new AuthorInfoList( $title, $limit, $includeBots );
-		$doc = $authorList->getXml();
-		$resp = new AjaxResponse( $doc->saveXML() );
-		$resp->setContentType( "text/xml" );
-		return $resp;
-	}
-
 	private $title;
 	private $user;
 	private $editCount;
 	private $firstEdit;
 
-	public function __construct( $user, $title ) {
+	/**
+	 * Constructor
+	 * @param User $user who is looking
+	 * @param Title $title to check
+	 */
+	public function __construct( User $user, Title $title ) {
 		$this->title = $title;
 		$this->user = $user;
 		$this->load();
 	}
 
+	/**
+	 * Get the number of edits this editor made
+	 * @return int
+	 */
 	public function getEditCount() {
 		return $this->editCount;
 	}
 
+	/**
+	 * Get the timestamp of their first edit
+	 * @return int
+	 */
 	public function getFirstEdit() {
 		return $this->firstEdit;
 	}
 
 	private function load() {
 		$dbr = wfGetDB( DB_SLAVE );
-		$query = "SELECT COUNT(rev_user) AS editCount, MIN(rev_timestamp) AS firstEdit FROM revision " .
-			"WHERE rev_user={$this->user->getId()} " .
-			"AND rev_page={$this->title->getArticleId()}";
-		$res = $dbr->query( $query );
+		$res = $dbr->select(
+			"revision",
+			[ 'COUNT(rev_user) AS editCount', 'MIN(rev_timestamp) AS firstEdit' ],
+			[
+				'rev_user' => $this->user->getId(),
+				'rev_page' => $this->title->getArticleId()
+			], __METHOD__
+		);
 		$row = $dbr->fetchObject( $res );
+
 		$this->editCount = $row->editCount;
 		$this->firstEdit = $row->firstEdit;
-		$dbr->freeResult( $res );
 	}
 
+	/**
+	 * See if this looks like an email
+	 * @param string $name to check
+	 * @return bool
+	 */
+	protected function isEmail( $name ) {
+		// See if this is an email.  Maybe replace with something like
+		// https://packagist.org/packages/egulias/email-validator
+
+		if ( preg_match( "/^[-_a-z0-9\'+*$^&%=~!?{}]++(?:\.[-_a-z0-9\'+*$^&%=~!?{}]+)*+@(?:(?![-.])[-a-z0-9.]+(?<![-.])\.[a-z]{2,6}|\d{1,3}(?:\.\d{1,3}){3})(?::\d++)?$/iD", $name ) ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Get a name to display for this author.
+	 * @return string
+	 */
 	public function getDisplayName() {
 		$name = $this->user->getRealName();
 
-		// Filter out email addresses
-		if ( preg_match( "/^[-_a-z0-9\'+*$^&%=~!?{}]++(?:\.[-_a-z0-9\'+*$^&%=~!?{}]+)*+@(?:(?![-.])[-a-z0-9.]+(?<![-.])\.[a-z]{2,6}|\d{1,3}(?:\.\d{1,3}){3})(?::\d++)?$/iD", $name ) ) {
-			$name = ''; // use username instead
-		}
-		if ( !$name ) { $name = $this->user->getName();
+		// Filter out email addresses and empties
+		if ( !$name || $this->isEmail( $name ) ) {
+			$name = $this->user->getName();
 		}
 		return $name;
 	}
 
 	private function getAuthorLink() {
-		global $wgScriptPath;
 		$title = Title::newFromText( 'User:' . $this->user->getTitleKey() );
 		$href = $title->getFullUrl();
 		return $href;
 	}
 
-	public function getInfo( $type ) {
-	// if($type==="ORCID")
-	}
-
 	/**
 	 * Creates the HTML code to display a single
 	 * author
+	 *
+	 * @return string
 	 */
 	public function renderAuthor() {
 		$name = $this->getDisplayName();
@@ -131,8 +129,11 @@ class AuthorInfo {
 	/**
 	 * Add an XML node for this author to the
 	 * given node.
+	 *
+	 * @param DOMDocument $doc to add to
+	 * @param DOMElement $node location to add the author info to
 	 */
-	public function addXml( $doc, $node ) {
+	public function addXml( DOMDocument $doc, DOMElement $node ) {
 		$e = $doc->createElement( "Author" );
 		$e->setAttribute( "Name", $this->getDisplayName() );
 		$e->setAttribute( "EditCount", $this->editCount );
@@ -140,9 +141,18 @@ class AuthorInfo {
 		$node->appendChild( $e );
 	}
 
-	public static function compareByEdits( $a1, $a2 ) {
+	/**
+	 * Compare two authors by edits and then usernames
+	 *
+	 * @param AuthorInfo $a1 First author
+	 * @param AuthorInfo $a2 Second author
+	 * @return int
+	 */
+	public static function compareByEdits( AuthorInfo $a1, AuthorInfo $a2 ) {
 		$c = $a2->getEditCount() - $a1->getEditCount();
-		if ( $c == 0 ) { // If equal edits, compare by realname
+
+		// If equal edits, compare by realname
+		if ( $c == 0 ) {
 			$c = strcasecmp( $a1->getDisplayName(), $a2->getDisplayName() );
 		}
 		return $c;
