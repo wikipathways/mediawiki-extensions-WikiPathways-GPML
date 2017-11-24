@@ -4,6 +4,6 @@
 	},
 	"wp-gpml-desc": "Render GPML-format pathways.",
 	"wp-gpml-authorinfo": "<div id='authorInfoContainer' data-pageId='$1' data-limit='$2' data-showBots='%3'></div>",
-	"wp-gpml-pathway": "<div id='$2' class='thumb t$3'><div class='thumbinner'>\n<div class='internal'>\n<wikipathways-pvjs id='pvjs-container' class='wikipathways-pvjs' resource='http://identifiers.org/wikipathways/$4' version='$5' src='$6' display-errors=true display-warnings=true manual-render=true editor='$7' fit-to-container=true>\n<img width='100%' alt='$8' src='$9'>\n</wikipathways-pvjs></div>\n<div class='thumbcaption' $10>$11</div></div></div>",
+	"wp-gpml-pathway": "<div id='$2' class='thumb t$3'><div class='thumbinner'>\n<div class='internal'>\n<wikipathways-pvjs id='pvjs-container' class='wikipathways-pvjs' resource='http://identifiers.org/wikipathways/$4' version='$5' src='$6' display-errors=true display-warnings=true manual-render=true editor='$7' fit-to-container=true>\n<img height='600px' width='100%' alt='$8' src='$9'>\n</wikipathways-pvjs></div>\n<div class='thumbcaption' $10>$11</div></div></div>",
 	"wp-gpml-output-template": "AuthorInfo: $1\n\nPathway: $2\n\n<a name='Description'/><h2><span class='mw-headline'>Description</span></h2>\n$3"
 }
