@@ -87,11 +87,17 @@ class Content extends TextContent {
 	) {
 		$this->title = $title;
 		$this->revId = $revId;
-		$this->pathway = Pathway::newFromTitle($this->title);
+		$this->pathway = Pathway::newFromTitle( $this->title );
 
 		$this->parsed = new SimpleXMLElement( $this->getNativeData() );
 		$this->parsed->registerXPathNamespace( "gpml", "http://pathvisio.org/GPML/2013a" );
 
+		if ( !$options ) {
+			// NOTE: use canonical options per default to produce
+			// cacheable output
+			$options = $this->getContentHandler()
+					 ->makeParserOptions( 'canonical' );
+		}
 
 		if ( $generateHtml ) {
 			$html = $this->getHtml();
@@ -143,7 +149,7 @@ class Content extends TextContent {
 
 		$textalign = $wgContLang->isRTL() ? ' style="text-align:right"' : '';
 		$align = "center";
-		$thumbUrl = '\$this->pathway->getImage()->getViewURL();'; #throws error atm
+		$thumbUrl = $this->pathway->getImage()->getViewURL();
 		$label = $this->getLabel();
 		$alt = "ALT-TEXT";
 		$id = "thumb";
@@ -154,19 +160,24 @@ class Content extends TextContent {
 		)->plain();
 	}
 
+	/**
+	 * Return HTML for a labeled button
+	 *
+	 * @return string
+	 */
 	protected function getLabel() {
 		global $wgUser;
 
-		//Create edit button
+		// Create edit button
 		$pathwayURL = $this->pathway->getTitleObject()->getPrefixedURL();
-		//AP20070918
+		// AP20070918
 		$editButton = '';
-		if ($wgUser->isLoggedIn() && $this->pathway->getTitleObject()->userCan('edit')) {
+		if ( $wgUser->isLoggedIn() && $this->pathway->getTitleObject()->userCan( 'edit' ) ) {
 			$identifier = $this->pathway->getIdentifier();
 			$version = $this->pathway->getLatestRevision();
 			$editButton = '<div style="float:left;">' .
 						// see http://www.ericmmartin.com/projects/simplemodal/
-						'<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js"></script>' .
+						'<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js"></script>'.
 						// this should just be a button, but the button class only works for "a" elements with text inside.
 						'<a id="download-from-page" href="#" onclick="return false;" class="button"><span>Launch Editor</span></a>' .
 						'<script type="text/javascript">' .
@@ -184,13 +195,13 @@ class Content extends TextContent {
 						'</script>' .
 						'</div>';
 		} else {
-			if(!$wgUser->isLoggedIn()) {
+			if ( !$wgUser->isLoggedIn() ) {
 				$hrefbtn = SITE_URL . "/index.php?title=Special:Userlogin&returnto=$pathwayURL";
 				$label = "Log in to edit pathway";
-			} else if(wfReadOnly()) {
+			} elseif ( wfReadOnly() ) {
 				$hrefbtn = "";
 				$label = "Database locked";
-			} else if(!$this->pathway->getTitleObject()->userCan('edit')) {
+			} elseif ( !$this->pathway->getTitleObject()->userCan( 'edit' ) ) {
 				$hrefbtn = "";
 				$label = "Editing is disabled";
 			}
@@ -199,13 +210,13 @@ class Content extends TextContent {
 						"class='button'><span>$label</span></a>";
 		}
 
-		$helpUrl = Title::newFromText("Help:Known_problems")->getFullUrl();
+		$helpUrl = Title::newFromText( "Help:Known_problems" )->getFullUrl();
 		$helpLink = "<div style='float:left;'><a href='$helpUrl'> not working?</a></div>";
 
-		//Create dropdown action menu
+		// Create dropdown action menu
 		$pwTitle = $this->pathway->getTitleObject()->getFullText();
-		//disable dropdown for now
-		$drop = PathwayPage::editDropDown($this->pathway);
+		// disable dropdown for now
+		$drop = PathwayPage::editDropDown( $this->pathway );
 		$drop = '<div style="float:right;">' . $drop . '</div>';
 
 		return $editButton . $helpLink . $drop;
