@@ -19,6 +19,8 @@
 	},
 	"callback": "WikiPathways\\GPML\\Hook::onRegistration",
 	"Hooks": {
+		"PageContentSave": "WikiPathways\\GPML\\Hook::checkGpml",
+		"PageSaveComplete": "WikiPathways\\GPML\\Hook::updateAfterSave",
 		"CodeEditorGetPageLanguage": "WikiPathways\\GPML\\Hook::onCodeEditorGetPageLanguage",
 		"ContentHandlerForModelID": "WikiPathways\\GPML\\Hook::onContentHandlerForModelID"
 	},
@@ -47,6 +49,15 @@
 		"remoteExtPath": "GPML"
 	},
 	"ResourceModules": {
+		"wpi.searchPathways": {
+			"scripts": [
+				"modules/SearchPathways.js"
+			],
+			"styles": [
+				"modules/SearchPathways.css"
+			],
+			"dependencies": "mediawiki.util"
+		},
 		"wpi.AuthorInfo": {
 			"scripts": [
 				"modules/AuthorInfo.js"
@@ -81,6 +92,10 @@
 	},
 	"DefaultUserOptions": {
 		"usebetatoolbar": true
+	},
+	"Config": {
+		"prefix": "wpi",
+		"DisableValidation": true
 	},
 	"manifest_version": 2
 }
