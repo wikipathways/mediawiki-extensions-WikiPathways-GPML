@@ -48,7 +48,7 @@
 	],
 	"ResourceFileModulePaths": {
 		"localBasePath": "modules",
-		"remoteExtPath": "GPML"
+		"remoteExtPath": "GPML/modules"
 	},
 	"ResourceModules": {
 		"wpi.searchPathways": {
