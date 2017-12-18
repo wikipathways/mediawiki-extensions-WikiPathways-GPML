@@ -1,0 +1,63 @@
+/*****
+** Drop down menu
+******/
+#gpml-pathwaynav, #gpml-pathwaynav ul {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	z-index: 10000
+}
+
+#gpml-pathwaynav a {
+	float: none;
+	display: block;
+	text-decoration: none;
+}
+
+#gpml-pathwaynav a.parent {
+	background:url(images/right.png) no-repeat scroll right center;
+}
+
+#gpml-pathwaynav li {
+	float: left;
+	width: 10em;
+}
+
+#gpml-pathwaynav li ul {
+	position: absolute;
+	width: 10em;
+	left: -999em;
+}
+#gpml-pathwaynav li li {
+	padding: 2px;
+}
+
+#gpml-pathwaynav li:hover ul, #gpml-pathwaynav li.sfhover ul {
+	left: auto;
+	padding:3px;
+	border:1px solid #6e6e76;
+	background-color:#dadaea;
+}
+
+#gpml-pathwaynav li:hover, #gpml-pathwaynav li.sfhover {
+	background-color: #eda;
+}
+
+#gpml-pathwaynav li ul ul {
+	margin: -1em 0 0 10em;
+}
+
+#gpml-pathwaynav, #gpml-pathwaynav ul {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	line-height: 1;
+}
+
+#gpml-pathwaynav li:hover ul ul, #gpml-pathwaynav li.sfhover ul ul {
+	left: -999em;
+}
+
+#gpml-pathwaynav li:hover ul, #gpml-pathwaynav li li:hover ul, #gpml-pathwaynav li.sfhover ul, #gpml-pathwaynav li li.sfhover ul {
+	left: auto;
+}

@@ -1,0 +1,39 @@
+/*****
+* Buttons
+******/
+.clear { /* generic container (i.e. div) for floating buttons */
+	overflow: hidden;
+	width: 100%;
+}
+
+a.button {
+	background: #EEEEFF url('images/button_a.png') no-repeat scroll top right;
+	display: block;
+	float: left;
+	font: normal 12px arial, sans-serif;
+	height: 24px;
+	margin-right: 6px;
+	padding-right: 18px; /* sliding doors padding */
+	text-decoration: none;
+}
+
+a.buttondown {
+	background: #EEEEFF url('images/button_a_down.png') no-repeat scroll top right;
+	clear: both;
+}
+
+a.button span {
+	background: transparent url('images/button_span.png') no-repeat;
+	display: block;
+	line-height: 14px;
+	padding: 5px 0 5px 18px;
+}
+
+a.button:hover {
+	background-color: #FFEE88;
+}
+
+a.button:active span {
+	background-position: bottom left;
+	padding: 6px 0 4px 18px; /* push text down 1px */
+}

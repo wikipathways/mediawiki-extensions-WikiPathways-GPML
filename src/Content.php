@@ -29,7 +29,6 @@ use TextContent;
 use Title;
 use User;
 use WikiPathways\Pathway;
-use WikiPathways\PathwayPage;
 
 /**
  * Content for Pathway pages
@@ -215,11 +214,68 @@ class Content extends TextContent {
 
 		// Create dropdown action menu
 		$pwTitle = $this->pathway->getTitleObject()->getFullText();
+
 		// disable dropdown for now
-		$drop = PathwayPage::editDropDown( $this->pathway );
-		$drop = '<div style="float:right;">' . $drop . '</div>';
+		$drop = self::editDropDown( $this->pathway );
+#		$drop = '<div style="float:right;">' . $drop . '</div>';
 
 		return $editButton . $helpLink . $drop;
+	}
+
+	/**
+	 * Dropdown widget
+	 *
+	 * @param string $pathway to get widget for
+	 * @return string
+	 */
+	public static function editDropDown( $pathway ) {
+		global $wgOut;
+
+		 $download = [
+						'PathVisio (.gpml)' => self::getDownloadURL( $pathway, 'gpml' ),
+						'Scalable Vector Graphics (.svg)' => self::getDownloadURL( $pathway, 'svg' ),
+						'Gene list (.txt)' => self::getDownloadURL( $pathway, 'txt' ),
+						'Biopax level 3 (.owl)' => self::getDownloadURL( $pathway, 'owl' ),
+						'Eu.Gene (.pwf)' => self::getDownloadURL( $pathway, 'pwf' ),
+						'Png image (.png)' => self::getDownloadURL( $pathway, 'png' ),
+						'Acrobat (.pdf)' => self::getDownloadURL( $pathway, 'pdf' ),
+		   ];
+		$downloadlist = '';
+		foreach ( array_keys( $download ) as $key ) {
+			$downloadlist .= "<li><a href='{$download[$key]}'>$key</a></li>";
+		}
+
+		$dropdown = <<<DROPDOWN
+<ul id="gpml-pathwaynav" name="nav">
+<li><a href="#nogo2" class="button buttondown"><span>Download</span></a>
+		<ul>
+			$downloadlist
+		</ul>
+</li>
+</ul>
+
+DROPDOWN;
+
+		$wgOut->addModules( [ "wpi.Dropdown" ] );
+		return $dropdown;
+	}
+
+	/**
+	 * Get a properly formatted download url
+	 *
+	 * @param string $pathway to get url for
+	 * @param string $type of download url
+	 * @return string
+	 */
+	public static function getDownloadURL( $pathway, $type ) {
+		$arg['action'] = 'downloadFile';
+		$arg['type'] = $type;
+		$arg['pwTitle'] = $pathway->getTitleObject()->getFullText();
+		if ( $pathway->getActiveRevision() ) {
+			$args['oldid'] = $pathway->getActiveRevision();
+		}
+
+		return WPI_SCRIPT_URL . "?" . wfArrayToCgi( $arg );
 	}
 
 	/**

@@ -19,6 +19,8 @@
 	},
 	"callback": "WikiPathways\\GPML\\Hook::onRegistration",
 	"Hooks": {
+		"off-ParserBeforeStrip": "WikiPathways\\PathwayPage::render",
+		"off-BeforePageDisplay": "WikiPathways\\PathwayPage::addPreloaderScript",
 		"PageContentSave": "WikiPathways\\GPML\\Hook::checkGpml",
 		"PageSaveComplete": "WikiPathways\\GPML\\Hook::updateAfterSave",
 		"CodeEditorGetPageLanguage": "WikiPathways\\GPML\\Hook::onCodeEditorGetPageLanguage",
@@ -45,34 +47,43 @@
 		}
 	],
 	"ResourceFileModulePaths": {
-		"localBasePath": "",
+		"localBasePath": "modules",
 		"remoteExtPath": "GPML"
 	},
 	"ResourceModules": {
 		"wpi.searchPathways": {
 			"scripts": [
-				"modules/SearchPathways.js"
+				"SearchPathways.js"
 			],
 			"styles": [
-				"modules/SearchPathways.css"
+				"SearchPathways.css"
 			],
 			"dependencies": "mediawiki.util"
 		},
 		"wpi.AuthorInfo": {
 			"scripts": [
-				"modules/AuthorInfo.js"
+				"AuthorInfo.js"
 			],
 			"styles": [
-				"modules/AuthorInfo.css"
+				"AuthorInfo.css"
 			],
 			"dependencies": "mediawiki.util"
 		},
 		"wpi.Pathway": {
 			"scripts": [
-				"modules/Pathway.js"
+				"Pathway.js"
 			],
 			"styles": [
-				"modules/Pathway.css"
+				"Pathway.css"
+			]
+		},
+		"wpi.Dropdown": {
+			"scripts": [
+				"Dropdown.js"
+			],
+			"styles": [
+				"Dropdown.css",
+				"Button.css"
 			]
 		}
 	},
@@ -88,7 +99,8 @@
 		"WikiPathways\\GPML\\AuthorInfo": "src/AuthorInfo.php",
 		"WikiPathways\\GPML\\Hook": "src/Hook.php",
 		"WikiPathways\\GPML\\ContentHandler": "src/ContentHandler.php",
-		"WikiPathways\\GPML\\Content": "src/Content.php"
+		"WikiPathways\\GPML\\Content": "src/Content.php",
+		"WikiPathways\\GPML\\PathwayPage": "src/PathwayPage.php"
 	},
 	"DefaultUserOptions": {
 		"usebetatoolbar": true
