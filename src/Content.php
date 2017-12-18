@@ -217,7 +217,6 @@ class Content extends TextContent {
 
 		// disable dropdown for now
 		$drop = self::editDropDown( $this->pathway );
-#		$drop = '<div style="float:right;">' . $drop . '</div>';
 
 		return $editButton . $helpLink . $drop;
 	}
@@ -246,6 +245,7 @@ class Content extends TextContent {
 		}
 
 		$dropdown = <<<DROPDOWN
+<div style="float:right">
 <ul id="gpml-pathwaynav" name="nav">
 <li><a href="#nogo2" class="button buttondown"><span>Download</span></a>
 		<ul>
@@ -253,7 +253,7 @@ class Content extends TextContent {
 		</ul>
 </li>
 </ul>
-
+</div>
 DROPDOWN;
 
 		$wgOut->addModules( [ "wpi.Dropdown" ] );
