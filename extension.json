@@ -51,15 +51,6 @@
 		"remoteExtPath": "GPML/modules"
 	},
 	"ResourceModules": {
-		"wpi.searchPathways": {
-			"scripts": [
-				"SearchPathways.js"
-			],
-			"styles": [
-				"SearchPathways.css"
-			],
-			"dependencies": "mediawiki.util"
-		},
 		"wpi.AuthorInfo": {
 			"scripts": [
 				"AuthorInfo.js"

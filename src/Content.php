@@ -230,15 +230,15 @@ class Content extends TextContent {
 	public static function editDropDown( $pathway ) {
 		global $wgOut;
 
-		 $download = [
-						'PathVisio (.gpml)' => self::getDownloadURL( $pathway, 'gpml' ),
-						'Scalable Vector Graphics (.svg)' => self::getDownloadURL( $pathway, 'svg' ),
-						'Gene list (.txt)' => self::getDownloadURL( $pathway, 'txt' ),
-						'Biopax level 3 (.owl)' => self::getDownloadURL( $pathway, 'owl' ),
-						'Eu.Gene (.pwf)' => self::getDownloadURL( $pathway, 'pwf' ),
-						'Png image (.png)' => self::getDownloadURL( $pathway, 'png' ),
-						'Acrobat (.pdf)' => self::getDownloadURL( $pathway, 'pdf' ),
-		   ];
+		$download = [
+			'PathVisio (.gpml)' => self::getDownloadURL( $pathway, 'gpml' ),
+			'Scalable Vector Graphics (.svg)' => self::getDownloadURL( $pathway, 'svg' ),
+			'Gene list (.txt)' => self::getDownloadURL( $pathway, 'txt' ),
+			'Biopax level 3 (.owl)' => self::getDownloadURL( $pathway, 'owl' ),
+			'Eu.Gene (.pwf)' => self::getDownloadURL( $pathway, 'pwf' ),
+			'Png image (.png)' => self::getDownloadURL( $pathway, 'png' ),
+			'Acrobat (.pdf)' => self::getDownloadURL( $pathway, 'pdf' ),
+		];
 		$downloadlist = '';
 		foreach ( array_keys( $download ) as $key ) {
 			$downloadlist .= "<li><a href='{$download[$key]}'>$key</a></li>";
