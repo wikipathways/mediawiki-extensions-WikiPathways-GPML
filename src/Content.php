@@ -24,6 +24,7 @@ namespace WikiPathways\GPML;
 
 use ParserOptions;
 use ParserOutput;
+use RequestContext;
 use SimpleXMLElement;
 use TextContent;
 use Title;
@@ -35,19 +36,11 @@ use WikiPathways\Pathway;
  */
 class Content extends TextContent {
 
-	/**
-	 * @var bool|Title|null
-	 */
 	private $redirectTarget = false;
-
-	// SimpleXMLElement representing the GPML
 	protected $parsed;
-
-	// Title object we're passed
 	protected $title;
-
-	// Revision we're passed
 	protected $revId;
+	protected $request;
 
 	/**
 	 * @param string $text GPML code.
@@ -55,6 +48,8 @@ class Content extends TextContent {
 	 */
 	public function __construct( $text, $modelId = CONTENT_MODEL_GPML ) {
 		parent::__construct( $text, $modelId );
+		$this->output = RequestContext::getMain()->getOutput();
+		$this->request = RequestContext::getMain()->getRequest();
 	}
 
 	/**
@@ -111,24 +106,128 @@ class Content extends TextContent {
 	}
 
 	/**
-	 * @return string Page for GPML
+	 * @return Message Page for GPML
 	 */
 	protected function getHtml() {
-		$display = $this->renderAuthorInfo()
-				 . $this->renderPathway()
-				 . $this->renderDescription();
-
-		return $display;
+		return wfMessage( "wp-gpml-page-layout" )->params( $this->getSections() )->text();
 	}
 
+	/**
+	 * @return array of possible blocks
+	 */
+	protected function getSections() {
+		return [
+			$this->renderPrivateWarning(),
+			$this->renderTitle(), $this->renderDiagram(),
+			$this->renderDiagramFooter(), $this->renderAuthorInfo(),
+			$this->renderDescription(), $this->renderQualityTags(),
+			$this->renderOntologyTags(), $this->renderBibliography(),
+			$this->renderHistory(), $this->renderXrefs(),
+			$this->renderLinkToFullPathwayPage()
+		];
+	}
+
+	/**
+	 * @return method name
+	 */
+	protected function renderPrivateWarning() {
+		global $wgLang;
+
+		$warn = '';
+		if ( !$this->pathway->isPublic() ) {
+			$perm = $this->pathway->getPermissionManager()->getPermissions();
+			$expDate = "<b class='error'>Could not get "
+					 . "permissions for this pathway</b>";
+			if ( $perm ) {
+				$expDate = $wgLang->date( $perm->getExpires(), true );
+			}
+
+			$warn = wfMessage( 'wp-gpml-private-warning' )
+				  ->params( $expDate )->parse();
+		}
+		return $warn;
+	}
+
+	/**
+	 * @return method name
+	 */
+	protected function renderTitle() {
+		return wfMessage( 'wp-gpml-title' )->params( $this->pathway->getName() )
+			->parse();
+	}
+
+	/**
+	 * @return method name
+	 */
+	protected function renderDiagram() {
+		$pathway = $this->pathway;
+		$jsonData = $pathway->getPvjson();
+		if ( !$jsonData ) {
+			$pngPath = $pathway->getFileURL( FILETYPE_PNG, false );
+
+			return wfMessage( "wp-gpml-diagram-no-json" )->params( $pngPath )
+				->parse();
+		}
+
+		$this->getOutput()->addJsConfigVars( "pathwayJsonData", $jsonData );
+		$this->getOutput()->addModule( [ "wpi.pvjs", "wpi.PathwayLoader" ] );
+		return wfMessage( "wp-gpml-diagram" )->params( $pathway->getSvg(), $jsonData )
+			->parse();
+	}
+	/**
+	 * @return method name
+	 */
+	protected function renderDiagramFooter() {
+		return __METHOD__;
+	}
+	/**
+	 * @return method name
+	 */
+	protected function renderQualityTags() {
+		return __METHOD__;
+	}
+	/**
+	 * @return method name
+	 */
+	protected function renderOntologyTags() {
+		return __METHOD__;
+	}
+	/**
+	 * @return method name
+	 */
+	protected function renderBibliography() {
+		return __METHOD__;
+	}
+	/**
+	 * @return method name
+	 */
+	protected function renderHistory() {
+		return __METHOD__;
+	}
+	/**
+	 * @return method name
+	 */
+	protected function renderXrefs() {
+		return __METHOD__;
+	}
+	/**
+	 * @return method name
+	 */
+	protected function renderLinkToFullPathwayPage() {
+		return __METHOD__;
+	}
 	/**
 	 * Provide rendered html for author info
 	 * @return string
 	 */
 	protected function renderAuthorInfo() {
 		$msg = wfMessage( "wp-gpml-authorinfo" );
+		$revId = $this->request->getInt( 'oldid' );
+		if ( !$revId ) {
+			$revId = $this->title->getLatestRevID();
+		}
 		return $msg->params(
-			$this->title->getArticleID(), 5, false
+			$this->title->getArticleID(), $revId, 5, false
 		)->plain();
 	}
 

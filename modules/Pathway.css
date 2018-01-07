@@ -6,3 +6,8 @@ div.thumbinner div.internal {
 	margin: auto;
 	align: center;
 }
+div.private_warn {
+	background-color: #FFEEEE;
+	border: 1px solid #B22222;
+	padding: 5px;
+}

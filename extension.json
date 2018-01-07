@@ -51,6 +51,16 @@
 		"remoteExtPath": "GPML/modules"
 	},
 	"ResourceModules": {
+		"wpi.pvjs": {
+			"scripts": [
+				"pvjs.js"
+			]
+		},
+		"wpi.PathwayLoader": {
+			"scripts": [
+				"PathwayLoader.js"
+			]
+		},
 		"wpi.AuthorInfo": {
 			"scripts": [
 				"AuthorInfo.js"

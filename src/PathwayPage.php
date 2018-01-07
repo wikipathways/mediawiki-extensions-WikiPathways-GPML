@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2017  J. David Gladstone Institutes
+ * Copyright (C) 2017, 2018  J. David Gladstone Institutes
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Mark A. Hershberger <mah@nichework.com>
  */
 namespace WikiPathways\GPML;
 
@@ -75,32 +77,15 @@ class PathwayPage {
 	 */
 	public function getContent() {
 		$text = wfMessage(
-			"wp-gpml-page-layout", $this->titleEditor(), $this->privateWarning(), $this->descriptionText(),
-			$this->curatinTags(), $this->ontologyTags(), $this->bibliographyText()
-		);
+			"wp-gpml-page-layout", $this->privateWarning(), $this->titleEditor(),
+			$this->descriptionText(), $this->curationTags(), $this->ontologyTags(),
+			$this->bibliographyText() );
 		return $text;
 	}
 
 	public function titleEditor() {
 		$title = $this->pathway->getName();
 		return "<pageEditor id='pageTitle' type='title'>$title</pageEditor>";
-	}
-
-	public function privateWarning() {
-		global $wgLang;
-
-		$warn = '';
-		if ( !$this->pathway->isPublic() ) {
-			$url = SITE_URL;
-			$msg = wfMessage( 'pathwaypage-private-warning' )->plain();
-
-			$pp = $this->pathway->getPermissionManager()->getPermissions();
-			$expdate = $pp->getExpires();
-			$expdate = $wgLang->date( $expdate, true );
-			$msg = str_replace( '$DATE', $expdate, $msg );
-			$warn = "<div class='private_warn'>$msg</div>";
-		}
-		return $warn;
 	}
 
 	public function curationTags() {
