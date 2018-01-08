@@ -2,15 +2,21 @@
 	"@metadata": {
 		"authors": []
 	},
+	"pathwaypage-render-error": "= Error rendering pathway page =\nThis revision of the pathway probably contains invalid GPML code. If this happens to the most recent revision, try reverting\nthe pathway using the pathway history displayed below or contact the site administrators (see [[WikiPathways:About]]) to resolve this problem.\n=== Pathway history ===\n<pathwayHistory></pathwayHistory>\n=== Error details ===\n<pre>\n$1\n</pre>\n\n}\n",
+
 	"wp-gpml-desc": "Render GPML-format pathways.",
 	"wp-gpml-authorinfo": "<div id='authorInfoContainer' data-pageId='$1' data-revId='$2' data-limit='$3' data-showBots='$4'></div>",
 	"wp-gpml-pathway": "<div id='$2' class='thumb t$3'><div class='thumbinner' style='width: 900px; height: 635px; padding: 3px 6px 30px 3px; margin: auto;'>\n<div class='internal' style='width: 900px; margin:auto;'>\n<wikipathways-pvjs id='pvjs-container' class='wikipathways-pvjs' resource='http://identifiers.org/wikipathways/$4' version='$5' src='$6' display-errors=true display-warnings=true manual-render=true editor='$7' fit-to-container=true>\n<img height='600px' max-width='900px' alt='$8' src='$9'>\n</wikipathways-pvjs></div>\n<div class='thumbcaption' $10>$11</div></div></div>",
 	"wp-gpml-output-template": "AuthorInfo: $1\n\nPathway: $2\n\n<a name='Description'/><h2><span class='mw-headline'>Description</span></h2>\n$3",
-	"wp-gpml-page-layout": "<!--This is the template for the Pathway page.  The parameters are:\n1 - Navbars\n2 - PrivateWarning\n3 - Title\n4 - Diagram\n5 - DiagramFooter\n6 - AuthorInfo\n7 - Description\n8 - QualityTags\n9 - OntologyTags\n10 - Bibliography\n11 - History\n12 - Xrefs\n13 - LinkToFullPathwayPage\n-->\n$1\n$2\n$3\n$4\n$5\n$6\n{{Template:PathwayPage:Bottom}}\n$7\n$8\n$9\n$10\n$11\n$12",
-	"wp-gpml-widget-layout": "<!--This is the template for the Pathway widget page.  The parameters are:\n1 - Navbars\n2 - PrivateWarning\n3 - Title\n4 - Diagram\n5 - DiagramFooter\n6 - AuthorInfo\n7 - Description\n8 - QualityTags\n9 - OntologyTags\n10 - Bibliography\n11 - History\n12 - Xrefs\n13 - LinkToFullPathwayPage\n-->\n$4\n13",
-	"pathwaypage-render-error": "= Error rendering pathway page =\nThis revision of the pathway probably contains invalid GPML code. If this happens to the most recent revision, try reverting\nthe pathway using the pathway history displayed below or contact the site administrators (see [[WikiPathways:About]]) to resolve this problem.\n=== Pathway history ===\n<pathwayHistory></pathwayHistory>\n=== Error details ===\n<pre>\n$1\n</pre>\n\n}\n",
+	"wp-gpml-page-layout": "<!--This is the template for the Pathway page.  The parameters are:\n1 - Navbars\n2 - PrivateWarning\n3 - Title\n4 - Diagram\n5 - DiagramFooter\n6 - AuthorInfo\n7 - Description\n8 - QualityTags\n9 - OntologyTags\n10 - Bibliography\n11 - History\n12 - Xrefs\n13 - LinkToFullPathwayPage\n-->\n$1\n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$10\n$11",
+	"wp-gpml-widget-layout": "<!--This is the template for the Pathway widget page.  The parameters are:\n1 - Navbars\n2 - PrivateWarning\n3 - Title\n4 - Diagram\n5 - DiagramFooter\n6 - AuthorInfo\n7 - Description\n8 - QualityTags\n9 - OntologyTags\n10 - Bibliography\n11 - History\n12 - Xrefs\n13 - LinkToFullPathwayPage\n-->\n$4\n$13",
 	"wp-gpml-private-warning": "<div class='private_warn'>[[File:lock.png]]This pathway will not be visible to other users until $1.\nTo make it publicly available before that time, <span class='plainlinks'>[{{fullurl:{{FULLPAGENAMEE}}|action=manage_permissions}} change the permissions]</span>.</div>",
 	"wp-gpml-title": "<pageEditor id='pageTitle' type='title'>$1</pageEditor>",
 	"wp-gpml-diagram-no-json": "<div class='diagram-container'><div class='Container'><img src='$1' style='height: inherit;'></div></div><div><p>Note: Could not render interactive diagram. Displaying static pathway diagram instead.</p></div>",
-	"wp-gpml-diagram": "<div class='diagram-container'><div class='Container'>$1</div></div>"
+	"wp-gpml-diagram": "<div class='diagram-container'><div class='Container'>$1</div></div>",
+	"wp-gpml-history": "== History ==\n<pathwayHistory></pathwayHistory>",
+	"wp-gpml-xrefs": "== External references ==\n===DataNodes===\n{{CheckAvailable|data={{ #pathwayInfo: {{PAGENAME}}|datanodes}}|msg=''No datanodes''}}\n===Annotated Interactions===\n{{CheckAvailable|data={{ #pathwayInfo: {{PAGENAME}}|interactionAnnotations}}|msg=''No annotated interactions''}}",
+	"wp-gpml-link-to-full-page": "<div style='position:absolute;overflow:visible;bottom:0;left:15px;'><div id='logolink'><a id='wplink' target='top' href='$1'>View at [[File:WikiPathwaysName.png]]</a></div></div>",
+	"wp-gpml-diagram-footer": "<div id='diagram-footer'><div id='edit-button' style='float:left;'></div><div id='download-button'><div style='float:right;'><ul id='nav' name='nav'><li><a href='#nogo2' class='button buttondown'><span>Download</span></a><ul>$1</ul></li></ul></div></div></div>"
+
 }

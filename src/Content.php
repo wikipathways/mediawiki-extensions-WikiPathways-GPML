@@ -166,7 +166,7 @@ class Content extends TextContent {
 			$pngPath = $pathway->getFileURL( FILETYPE_PNG, false );
 
 			return wfMessage( "wp-gpml-diagram-no-json" )->params( $pngPath )
-				->parse();
+				->plain();
 		}
 
 		$this->getOutput()->addJsConfigVars( "pathwayJsonData", $jsonData );
@@ -178,7 +178,82 @@ class Content extends TextContent {
 	 * @return method name
 	 */
 	protected function renderDiagramFooter() {
-		return __METHOD__;
+		$pathway = $this->pathway;
+
+		// Create dropdown action menu
+		$download = [
+			'PathVisio (.gpml)' => self::getDownloadURL( $pathway, 'gpml' ),
+			'Scalable Vector Graphics (.svg)' => self::getDownloadURL( $pathway, 'svg' ),
+			'Gene list (.txt)' => self::getDownloadURL( $pathway, 'txt' ),
+			'Biopax level 3 (.owl)' => self::getDownloadURL( $pathway, 'owl' ),
+			'Eu.Gene (.pwf)' => self::getDownloadURL( $pathway, 'pwf' ),
+			'Png image (.png)' => self::getDownloadURL( $pathway, 'png' ),
+			'Acrobat (.pdf)' => self::getDownloadURL( $pathway, 'pdf' ),
+		];
+		$downloadlist = '';
+		foreach ( array_keys( $download ) as $key ) {
+			$downloadlist .= '<li><a href="' . $download[$key] . '">' . $key . '</a></li>';
+		}
+
+		return wfMessage( "wp-gpml-diagram-footer" )->params( $downloadlist )->plain();
+
+		// Create edit button
+		$pathwayURL = $pathway->getTitleObject()->getPrefixedURL();
+		// AP20070918
+		$helpUrl = Title::newFromText("Help:Known_problems")->getFullUrl();
+		$helpLink = '<div style="float:left;"><a href="' . $helpUrl . '"> not working?</a></div>';
+		if ($wgUser->isLoggedIn() && $pathway->getTitleObject()->userCan('edit')) {
+			$identifier = $pathway->getIdentifier();
+			$version = $pathway->getLatestRevision(); 
+			// see http://www.ericmmartin.com/projects/simplemodal/
+			$wgOut->addScript('<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js"></script>');
+			//*
+			// this should just be a button, but the button class only works for "a" elements with text inside.
+			$openInPathVisioScript = <<<SCRIPT
+<script type="text/javascript">
+window.addEventListener('DOMContentLoaded', function() {
+	document.querySelector('#edit-button').innerHTML = '<a id="download-from-page" href="#" onclick="return false;" class="button"><span>Launch Editor</span></a>{$helpLink}';
+	$("#download-from-page").click(function() {
+		$.modal('<div id="jnlp-instructions" style="width: 610px; height:616px; cursor:pointer;" onClick="$.modal.close()"><img id="jnlp-instructions-diagram" src="/skins/wikipathways/jnlp-instructions.png" alt="The JNLP will download to your default folder. Right-click the JNLP file and select Open."> </div>',
+		{
+			overlayClose: true,
+			overlayCss: {backgroundColor: "gray"},
+			opacity: 50
+		});
+		// We need the kludge below, because the image doesn't display in FF otherwise.
+		window.setTimeout(function() {
+			$('#jnlp-instructions-diagram').attr('src', '/skins/wikipathways/jnlp-instructions.png');
+		}, 10);
+		// server must set Content-Disposition: attachment
+		// TODO why do the ampersand symbols below get parsed as HTML entities? Disabling this line and using the minimal line below for now, but we shouldn't have to do this..
+		//window.location = "{$SITE_URL}/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier={$identifier}&version={$version}&filename=WikiPathwaysEditor";
+		window.location = "{$SITE_URL}/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier={$identifier}";
+	});
+});
+</script>
+SCRIPT;
+			$wgOut->addScript($openInPathVisioScript);
+
+		} else {
+			if(!$wgUser->isLoggedIn()) {
+				$hrefbtn = SITE_URL . "/index.php?title=Special:Userlogin&returnto=$pathwayURL";
+				$label = "Log in to edit pathway";
+			} else if(wfReadOnly()) {
+				$hrefbtn = "";
+				$label = "Database locked";
+			} else if(!$pathway->getTitleObject()->userCan('edit')) {
+				$hrefbtn = "";
+				$label = "Editing is disabled";
+			}
+			$script = <<<SCRIPT
+<script type="text/javascript">
+window.addEventListener('DOMContentLoaded', function() {
+	document.querySelector('#edit-button').innerHTML = '<a href="{$hrefbtn}" title="{$label}" id="edit" class="button"><span>{$label}</span></a>{$helpLink}';
+});
+</script>
+SCRIPT;
+			$wgOut->addScript($script);
+		}
 	}
 	/**
 	 * @return method name
@@ -198,23 +273,26 @@ class Content extends TextContent {
 	protected function renderBibliography() {
 		return __METHOD__;
 	}
+
 	/**
-	 * @return method name
+	 * @return string
 	 */
 	protected function renderHistory() {
-		return __METHOD__;
+		return wfMessage( "wp-gpml-history" )->parse();
 	}
+
 	/**
-	 * @return method name
+	 * @return string
 	 */
 	protected function renderXrefs() {
-		return __METHOD__;
+		return wfMessage( "wp-gpml-xrefs" )->parse();
 	}
 	/**
 	 * @return method name
 	 */
 	protected function renderLinkToFullPathwayPage() {
-		return __METHOD__;
+		return wfMessage( "wp-gpml-link-to-full-page" )
+			->params( $this->pathway->getFullUrl() )->parse();
 	}
 	/**
 	 * Provide rendered html for author info
