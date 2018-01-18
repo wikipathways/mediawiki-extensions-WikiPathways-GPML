@@ -118,8 +118,8 @@ class Content extends TextContent {
 	protected function getSections() {
 		return [
 			$this->renderPrivateWarning(),
-			$this->renderTitle(), $this->renderDiagram(),
-			$this->renderDiagramFooter(), $this->renderAuthorInfo(),
+			$this->renderTitle(), $this->renderAuthorInfo(),
+			$this->renderDiagram(), $this->renderDiagramFooter(),
 			$this->renderDescription(), $this->renderQualityTags(),
 			$this->renderOntologyTags(), $this->renderBibliography(),
 			$this->renderHistory(), $this->renderXrefs(),
@@ -204,7 +204,7 @@ class Content extends TextContent {
 		$helpLink = '<div style="float:left;"><a href="' . $helpUrl . '"> not working?</a></div>';
 		if ($wgUser->isLoggedIn() && $pathway->getTitleObject()->userCan('edit')) {
 			$identifier = $pathway->getIdentifier();
-			$version = $pathway->getLatestRevision(); 
+			$version = $pathway->getLatestRevision();
 			// see http://www.ericmmartin.com/projects/simplemodal/
 			$wgOut->addScript('<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js"></script>');
 			//*
