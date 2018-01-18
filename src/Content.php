@@ -22,8 +22,10 @@
 
 namespace WikiPathways\GPML;
 
+use Message;
 use ParserOptions;
 use ParserOutput;
+use RawMessage;
 use RequestContext;
 use SimpleXMLElement;
 use TextContent;
@@ -479,10 +481,10 @@ DROPDOWN;
 	 * @return string the description from the gpml.
 	 */
 	protected function renderDescription() {
-		$msg = new \RawMessage( "$1" );
+		$msg = new RawMessage( "$1" );
 		return $msg->params( $this->xpathContent(
 			"/gpml:Pathway/gpml:Comment[@Source='WikiPathways-description']"
-		) );
+		) )->toString( Message::FORMAT_PARSE );
 	}
 
 	/**
