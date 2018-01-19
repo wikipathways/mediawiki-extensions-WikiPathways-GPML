@@ -43,6 +43,7 @@ class Content extends TextContent {
 	protected $title;
 	protected $revId;
 	protected $request;
+	protected $user;
 
 	/**
 	 * @param string $text GPML code.
@@ -52,6 +53,7 @@ class Content extends TextContent {
 		parent::__construct( $text, $modelId );
 		$this->output = RequestContext::getMain()->getOutput();
 		$this->request = RequestContext::getMain()->getRequest();
+		$this->user = RequestContext::getMain()->getUser();
 	}
 
 	/**
@@ -198,19 +200,22 @@ class Content extends TextContent {
 		}
 
 		return wfMessage( "wp-gpml-diagram-footer" )->params( $downloadlist )->plain();
-
+# The rest of the code in this method here is kept for future reference.
 		// Create edit button
 		$pathwayURL = $pathway->getTitleObject()->getPrefixedURL();
 		// AP20070918
-		$helpUrl = Title::newFromText("Help:Known_problems")->getFullUrl();
+		$helpUrl = Title::newFromText( "Help:Known_problems" )->getFullUrl();
 		$helpLink = '<div style="float:left;"><a href="' . $helpUrl . '"> not working?</a></div>';
-		if ($wgUser->isLoggedIn() && $pathway->getTitleObject()->userCan('edit')) {
+		if ( $this->user->isLoggedIn() && $pathway->getTitleObject()->userCan( 'edit' ) ) {
 			$identifier = $pathway->getIdentifier();
 			$version = $pathway->getLatestRevision();
 			// see http://www.ericmmartin.com/projects/simplemodal/
-			$wgOut->addScript('<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js"></script>');
-			//*
-			// this should just be a button, but the button class only works for "a" elements with text inside.
+			$this->output->addScript(
+				'<script type="text/javascript" src='
+				. '"//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js">'
+				. '</script>' );
+			// this should just be a button, but the button class only
+			// works for "a" elements with text inside.
 			$openInPathVisioScript = <<<SCRIPT
 <script type="text/javascript">
 window.addEventListener('DOMContentLoaded', function() {
@@ -234,16 +239,16 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 SCRIPT;
-			$wgOut->addScript($openInPathVisioScript);
+			$this->output->addScript( $openInPathVisioScript );
 
 		} else {
-			if(!$wgUser->isLoggedIn()) {
+			if ( !$this->user->isLoggedIn() ) {
 				$hrefbtn = SITE_URL . "/index.php?title=Special:Userlogin&returnto=$pathwayURL";
 				$label = "Log in to edit pathway";
-			} else if(wfReadOnly()) {
+			} elseif ( wfReadOnly() ) {
 				$hrefbtn = "";
 				$label = "Database locked";
-			} else if(!$pathway->getTitleObject()->userCan('edit')) {
+			} elseif ( !$pathway->getTitleObject()->userCan( 'edit' ) ) {
 				$hrefbtn = "";
 				$label = "Editing is disabled";
 			}
@@ -254,26 +259,32 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 SCRIPT;
-			$wgOut->addScript($script);
+			$this->output->addScript( $script );
 		}
 	}
 	/**
 	 * @return method name
 	 */
 	protected function renderQualityTags() {
-		return __METHOD__;
+		return wfMessage( "wp-gpml-quality-tags" )->parse();
 	}
 	/**
 	 * @return method name
 	 */
 	protected function renderOntologyTags() {
-		return __METHOD__;
+		return wfMessage( "wp-gpml-ontology-tags" )->parse();
 	}
 	/**
 	 * @return method name
 	 */
 	protected function renderBibliography() {
-		return __METHOD__;
+		$out = wfMessage( "wp-gpml-bibliography" );
+
+		$param = "";
+		if ( $this->user->isLoggedIn() ) {
+			$param = wfMessage( "wp-gpml-bibliography-help" );
+		}
+		return $out->params( $param )->parse();
 	}
 
 	/**
@@ -316,7 +327,7 @@ SCRIPT;
 	 * @return string
 	 */
 	protected function  renderPathway() {
-		global $wgContLang, $wgUser;
+		global $wgContLang;
 		$editorState = 'disabled';
 
 		$gpml = $this->pathway->getFileURL( FILETYPE_GPML );
@@ -327,13 +338,12 @@ SCRIPT;
 
 		$textalign = $wgContLang->isRTL() ? ' style="text-align:right"' : '';
 		$align = "center";
-		$thumbUrl = $this->pathway->getImage()->getViewURL();
 		$label = $this->getLabel();
 		$alt = "ALT-TEXT";
-		$id = "thumb";
+		$pathType = "thumb";
 
 		return wfMessage( "wp-gpml-pathway" )->params(
-			$wgUser->mName, $id, $align, $identifier, $version, $gpml,
+			$this->user->getName(), $pathType, $align, $identifier, $version, $gpml,
 			$editorState, $alt, $imgURL, $textalign, $label
 		)->plain();
 	}
@@ -344,36 +354,53 @@ SCRIPT;
 	 * @return string
 	 */
 	protected function getLabel() {
-		global $wgUser;
-
 		// Create edit button
 		$pathwayURL = $this->pathway->getTitleObject()->getPrefixedURL();
 		// AP20070918
 		$editButton = '';
-		if ( $wgUser->isLoggedIn() && $this->pathway->getTitleObject()->userCan( 'edit' ) ) {
+		if ( $this->user->isLoggedIn() && $this->pathway->getTitleObject()->userCan( 'edit' ) ) {
 			$identifier = $this->pathway->getIdentifier();
-			$version = $this->pathway->getLatestRevision();
-			$editButton = '<div style="float:left;">' .
-						// see http://www.ericmmartin.com/projects/simplemodal/
-						'<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js"></script>'.
-						// this should just be a button, but the button class only works for "a" elements with text inside.
-						'<a id="download-from-page" href="#" onclick="return false;" class="button"><span>Launch Editor</span></a>' .
-						'<script type="text/javascript">' .
-						" $('#download-from-page').click(function() { " .
-						" $.modal('<div id=\"jnlp-instructions\" style=\"width: 610px; height:616px; cursor:pointer;\" onClick=\"$.modal.close()\"><img id=\"jnlp-instructions-diagram\" src=\"/skins/wikipathways/jnlp-instructions.png\" alt=\"The JNLP will download to your default folder. Right-click the JNLP file and select Open.\"> </div>', {overlayClose:true, overlayCss: {backgroundColor: \"gray\"}, opacity: 50}); " .
-						// We need the kludge below, because the image doesn't display in FF otherwise.
-						" window.setTimeout(function() { " .
-						" $('#jnlp-instructions-diagram').attr('src', '/skins/wikipathways/jnlp-instructions.png'); " .
-						"}, 10);" .
-						// server must set Content-Disposition: attachment
-						// TODO why do the ampersand symbols below get parsed as HTML entities? Disabling this line and using the minimal line below for now, but we shouldn't have to do this..
-						//" window.location = '" . SITE_URL . "/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier=" . $identifier . "&version=" . $version . "&filename=WikiPathwaysEditor'; " .
-						" window.location = '" . SITE_URL . "/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier=" . $identifier . "'; " .
-						" }); " .
-						'</script>' .
-						'</div>';
+			$editButton
+				= '<div style="float:left;">' .
+				// see http://www.ericmmartin.com/projects/simplemodal/
+				'<script type="text/javascript" src='
+				. '"//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js">'
+				. '</script>'
+				// this should just be a button, but the button class
+				// only works for "a" elements with text inside.
+				. '<a id="download-from-page" href="#" onclick="return false;" class="button">'
+				. '<span>Launch Editor</span></a>'
+				. '<script type="text/javascript">'
+				. " $('#download-from-page').click(function() { "
+				. " $.modal('<div id=\"jnlp-instructions\" style=\"width: "
+				. "610px; height:616px; cursor:pointer;\" onClick=\"$.modal.close()\">"
+				. "<img id=\"jnlp-instructions-diagram\" "
+				. "src=\"/skins/wikipathways/jnlp-instructions.png\" "
+				. "alt=\"The JNLP will download to your default folder. Right-click "
+				. "the JNLP file and select Open.\"> </div>', {overlayClose:true, "
+				. "overlayCss: {backgroundColor: \"gray\"}, opacity: 50}); "
+				// We need the kludge below, because the image doesn't display in FF otherwise.
+				. " window.setTimeout(function() { "
+				. " $('#jnlp-instructions-diagram').attr('src', "
+				. "'/skins/wikipathways/jnlp-instructions.png'); }, 10);" .
+				// server must set Content-Disposition: attachment
+
+				// TODO why do the ampersand symbols below get parsed
+				// as HTML entities? Disabling this line and using the
+				// minimal line below for now, but we shouldn't have
+				// to do this..
+
+				// " window.location = '" . SITE_URL
+				// . "/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier="
+				// . $identifier . "&version=" . $version
+				// . "&filename=WikiPathwaysEditor'; " .
+
+				" window.location = '" . SITE_URL
+				. "/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier="
+				. $identifier . "';  }); "
+				. '</script></div>';
 		} else {
-			if ( !$wgUser->isLoggedIn() ) {
+			if ( !$this->user->isLoggedIn() ) {
 				$hrefbtn = SITE_URL . "/index.php?title=Special:Userlogin&returnto=$pathwayURL";
 				$label = "Log in to edit pathway";
 			} elseif ( wfReadOnly() ) {
@@ -391,11 +418,8 @@ SCRIPT;
 		$helpUrl = Title::newFromText( "Help:Known_problems" )->getFullUrl();
 		$helpLink = "<div style='float:left;'><a href='$helpUrl'> not working?</a></div>";
 
-		// Create dropdown action menu
-		$pwTitle = $this->pathway->getTitleObject()->getFullText();
-
 		// disable dropdown for now
-		$drop = self::editDropDown( $this->pathway );
+		$drop = $this->editDropDown( $this->pathway );
 
 		return $editButton . $helpLink . $drop;
 	}
@@ -406,9 +430,7 @@ SCRIPT;
 	 * @param string $pathway to get widget for
 	 * @return string
 	 */
-	public static function editDropDown( $pathway ) {
-		global $wgOut;
-
+	public function editDropDown( $pathway ) {
 		$download = [
 			'PathVisio (.gpml)' => self::getDownloadURL( $pathway, 'gpml' ),
 			'Scalable Vector Graphics (.svg)' => self::getDownloadURL( $pathway, 'svg' ),
@@ -434,8 +456,7 @@ SCRIPT;
 </ul>
 </div>
 DROPDOWN;
-
-		$wgOut->addModules( [ "wpi.Dropdown" ] );
+		$this->output->addModules( [ "wpi.Dropdown" ] );
 		return $dropdown;
 	}
 
@@ -451,7 +472,7 @@ DROPDOWN;
 		$arg['type'] = $type;
 		$arg['pwTitle'] = $pathway->getTitleObject()->getFullText();
 		if ( $pathway->getActiveRevision() ) {
-			$args['oldid'] = $pathway->getActiveRevision();
+			$arg['oldid'] = $pathway->getActiveRevision();
 		}
 
 		return WPI_SCRIPT_URL . "?" . wfArrayToCgi( $arg );
