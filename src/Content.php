@@ -184,22 +184,8 @@ class Content extends TextContent {
 	protected function renderDiagramFooter() {
 		$pathway = $this->pathway;
 
-		// Create dropdown action menu
-		$download = [
-			'PathVisio (.gpml)' => self::getDownloadURL( $pathway, 'gpml' ),
-			'Scalable Vector Graphics (.svg)' => self::getDownloadURL( $pathway, 'svg' ),
-			'Gene list (.txt)' => self::getDownloadURL( $pathway, 'txt' ),
-			'Biopax level 3 (.owl)' => self::getDownloadURL( $pathway, 'owl' ),
-			'Eu.Gene (.pwf)' => self::getDownloadURL( $pathway, 'pwf' ),
-			'Png image (.png)' => self::getDownloadURL( $pathway, 'png' ),
-			'Acrobat (.pdf)' => self::getDownloadURL( $pathway, 'pdf' ),
-		];
-		$downloadlist = '';
-		foreach ( array_keys( $download ) as $key ) {
-			$downloadlist .= '<li><a href="' . $download[$key] . '">' . $key . '</a></li>';
-		}
-
-		return wfMessage( "wp-gpml-diagram-footer" )->params( $downloadlist )->plain();
+		$downloadList = $this->editDropDown( $pathway );
+		return wfMessage( "wp-gpml-diagram-footer" )->params( $downloadList )->plain();
 # The rest of the code in this method here is kept for future reference.
 		// Create edit button
 		$pathwayURL = $pathway->getTitleObject()->getPrefixedURL();
