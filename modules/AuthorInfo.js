@@ -1,5 +1,3 @@
-$(document).ready(function() {AuthorInfo.init("authorInfoContainer");});
-
 var AuthorInfo = {};
 /**
  * Create an author list for the given page and add it to the
@@ -106,3 +104,5 @@ AuthorInfo.hideError = function() {
 	AuthorInfo.errorDiv.style.display = "none";
 	AuthorInfo.errorDiv.innerHTML = "";
 };
+
+$(document).ready(function() {AuthorInfo.init("authorInfoContainer");});
