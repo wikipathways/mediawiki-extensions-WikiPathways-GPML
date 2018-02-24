@@ -17,7 +17,7 @@
  *
  * @file
  * @ingroup Extensions
- * @author Mark A. Hershberger
+ * @author  Mark A. Hershberger
  */
 
 namespace WikiPathways\GPML;
@@ -94,7 +94,7 @@ class Content extends TextContent {
 			// NOTE: use canonical options per default to produce
 			// cacheable output
 			$options = $this->getContentHandler()
-					 ->makeParserOptions( 'canonical' );
+				->makeParserOptions( 'canonical' );
 		}
 
 		if ( $generateHtml ) {
@@ -121,13 +121,13 @@ class Content extends TextContent {
 	 */
 	protected function getSections() {
 		return [
-			$this->renderPrivateWarning(),
-			$this->renderTitle(), $this->renderAuthorInfo(),
-			$this->renderDiagram(), $this->renderDiagramFooter(),
-			$this->renderDescription(), $this->renderQualityTags(),
-			$this->renderOntologyTags(), $this->renderBibliography(),
-			$this->renderHistory(), $this->renderXrefs(),
-			$this->renderLinkToFullPathwayPage()
+		$this->renderPrivateWarning(),
+		$this->renderTitle(), $this->renderAuthorInfo(),
+		$this->renderDiagram(), $this->renderDiagramFooter(),
+		$this->renderDescription(), $this->renderQualityTags(),
+		$this->renderOntologyTags(), $this->renderBibliography(),
+		$this->renderHistory(), $this->renderXrefs(),
+		$this->renderLinkToFullPathwayPage()
 		];
 	}
 
@@ -141,13 +141,13 @@ class Content extends TextContent {
 		if ( !$this->pathway->isPublic() ) {
 			$perm = $this->pathway->getPermissionManager()->getPermissions();
 			$expDate = "<b class='error'>Could not get "
-					 . "permissions for this pathway</b>";
+			. "permissions for this pathway</b>";
 			if ( $perm ) {
 				$expDate = $wgLang->date( $perm->getExpires(), true );
 			}
 
 			$warn = wfMessage( 'wp-gpml-private-warning' )
-				  ->params( $expDate )->parse();
+			->params( $expDate )->parse();
 		}
 		return $warn;
 	}
@@ -157,7 +157,7 @@ class Content extends TextContent {
 	 */
 	protected function renderTitle() {
 		return wfMessage( 'wp-gpml-title' )->params( $this->pathway->getName() )
-			->parse();
+		->parse();
 	}
 
 	/**
@@ -170,13 +170,13 @@ class Content extends TextContent {
 			$pngPath = $pathway->getFileURL( FILETYPE_PNG, false );
 
 			return wfMessage( "wp-gpml-diagram-no-json" )->params( $pngPath )
-				->plain();
+			->plain();
 		}
 
 		$this->getOutput()->addJsConfigVars( "pathwayJsonData", $jsonData );
 		$this->getOutput()->addModule( [ "wpi.pvjs", "wpi.PathwayLoader" ] );
 		return wfMessage( "wp-gpml-diagram" )->params( $pathway->getSvg(), $jsonData )
-			->parse();
+		->parse();
 	}
 	/**
 	 * @return method name
@@ -186,7 +186,7 @@ class Content extends TextContent {
 
 		$downloadList = $this->editDropDown( $pathway );
 		return wfMessage( "wp-gpml-diagram-footer" )->params( $downloadList )->plain();
-# The rest of the code in this method here is kept for future reference.
+		// The rest of the code in this method here is kept for future reference.
 		// Create edit button
 		$pathwayURL = $pathway->getTitleObject()->getPrefixedURL();
 		// AP20070918
@@ -199,7 +199,8 @@ class Content extends TextContent {
 			$this->output->addScript(
 				'<script type="text/javascript" src='
 				. '"//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js">'
-				. '</script>' );
+				. '</script>'
+			);
 			// this should just be a button, but the button class only
 			// works for "a" elements with text inside.
 			$openInPathVisioScript = <<<SCRIPT
@@ -291,10 +292,11 @@ SCRIPT;
 	 */
 	protected function renderLinkToFullPathwayPage() {
 		return wfMessage( "wp-gpml-link-to-full-page" )
-			->params( $this->pathway->getFullUrl() )->parse();
+		->params( $this->pathway->getFullUrl() )->parse();
 	}
 	/**
 	 * Provide rendered html for author info
+	 *
 	 * @return string
 	 */
 	protected function renderAuthorInfo() {
@@ -310,9 +312,10 @@ SCRIPT;
 
 	/**
 	 * Rendered HTML for the pathway display
+	 *
 	 * @return string
 	 */
-	protected function  renderPathway() {
+	protected function renderPathway() {
 		global $wgContLang;
 		$editorState = 'disabled';
 
@@ -347,44 +350,44 @@ SCRIPT;
 		if ( $this->user->isLoggedIn() && $this->pathway->getTitleObject()->userCan( 'edit' ) ) {
 			$identifier = $this->pathway->getIdentifier();
 			$editButton
-				= '<div style="float:left;">' .
-				// see http://www.ericmmartin.com/projects/simplemodal/
-				'<script type="text/javascript" src='
-				. '"//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js">'
-				. '</script>'
-				// this should just be a button, but the button class
-				// only works for "a" elements with text inside.
-				. '<a id="download-from-page" href="#" onclick="return false;" class="button">'
-				. '<span>Launch Editor</span></a>'
-				. '<script type="text/javascript">'
-				. " $('#download-from-page').click(function() { "
-				. " $.modal('<div id=\"jnlp-instructions\" style=\"width: "
-				. "610px; height:616px; cursor:pointer;\" onClick=\"$.modal.close()\">"
-				. "<img id=\"jnlp-instructions-diagram\" "
-				. "src=\"/skins/wikipathways/jnlp-instructions.png\" "
-				. "alt=\"The JNLP will download to your default folder. Right-click "
-				. "the JNLP file and select Open.\"> </div>', {overlayClose:true, "
-				. "overlayCss: {backgroundColor: \"gray\"}, opacity: 50}); "
-				// We need the kludge below, because the image doesn't display in FF otherwise.
-				. " window.setTimeout(function() { "
-				. " $('#jnlp-instructions-diagram').attr('src', "
-				. "'/skins/wikipathways/jnlp-instructions.png'); }, 10);" .
-				// server must set Content-Disposition: attachment
+			= '<div style="float:left;">' .
+			// see http://www.ericmmartin.com/projects/simplemodal/
+			'<script type="text/javascript" src='
+			. '"//cdnjs.cloudflare.com/ajax/libs/simplemodal/1.4.4/jquery.simplemodal.min.js">'
+			. '</script>'
+			// this should just be a button, but the button class
+			// only works for "a" elements with text inside.
+			. '<a id="download-from-page" href="#" onclick="return false;" class="button">'
+			. '<span>Launch Editor</span></a>'
+			. '<script type="text/javascript">'
+			. " $('#download-from-page').click(function() { "
+			. " $.modal('<div id=\"jnlp-instructions\" style=\"width: "
+			. "610px; height:616px; cursor:pointer;\" onClick=\"$.modal.close()\">"
+			. "<img id=\"jnlp-instructions-diagram\" "
+			. "src=\"/skins/wikipathways/jnlp-instructions.png\" "
+			. "alt=\"The JNLP will download to your default folder. Right-click "
+			. "the JNLP file and select Open.\"> </div>', {overlayClose:true, "
+			. "overlayCss: {backgroundColor: \"gray\"}, opacity: 50}); "
+			// We need the kludge below, because the image doesn't display in FF otherwise.
+			. " window.setTimeout(function() { "
+			. " $('#jnlp-instructions-diagram').attr('src', "
+			. "'/skins/wikipathways/jnlp-instructions.png'); }, 10);" .
+			// server must set Content-Disposition: attachment
 
-				// TODO why do the ampersand symbols below get parsed
-				// as HTML entities? Disabling this line and using the
-				// minimal line below for now, but we shouldn't have
-				// to do this..
+			// TODO why do the ampersand symbols below get parsed
+			// as HTML entities? Disabling this line and using the
+			// minimal line below for now, but we shouldn't have
+			// to do this..
 
-				// " window.location = '" . SITE_URL
-				// . "/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier="
-				// . $identifier . "&version=" . $version
-				// . "&filename=WikiPathwaysEditor'; " .
+			// " window.location = '" . SITE_URL
+			// . "/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier="
+			// . $identifier . "&version=" . $version
+			// . "&filename=WikiPathwaysEditor'; " .
 
-				" window.location = '" . SITE_URL
-				. "/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier="
-				. $identifier . "';  }); "
-				. '</script></div>';
+			" window.location = '" . SITE_URL
+			. "/wpi/extensions/PathwayViewer/pathway-jnlp.php?identifier="
+			. $identifier . "';  }); "
+			. '</script></div>';
 		} else {
 			if ( !$this->user->isLoggedIn() ) {
 				$hrefbtn = SITE_URL . "/index.php?title=Special:Userlogin&returnto=$pathwayURL";
@@ -398,7 +401,7 @@ SCRIPT;
 			}
 
 			$editButton = "<a href='$hrefbtn' title='$label' id='edit' " .
-						"class='button'><span>$label</span></a>";
+			"class='button'><span>$label</span></a>";
 		}
 
 		$helpUrl = Title::newFromText( "Help:Known_problems" )->getFullUrl();
@@ -418,13 +421,13 @@ SCRIPT;
 	 */
 	public function editDropDown( $pathway ) {
 		$download = [
-			'PathVisio (.gpml)' => self::getDownloadURL( $pathway, 'gpml' ),
-			'Scalable Vector Graphics (.svg)' => self::getDownloadURL( $pathway, 'svg' ),
-			'Gene list (.txt)' => self::getDownloadURL( $pathway, 'txt' ),
-			'Biopax level 3 (.owl)' => self::getDownloadURL( $pathway, 'owl' ),
-			'Eu.Gene (.pwf)' => self::getDownloadURL( $pathway, 'pwf' ),
-			'Png image (.png)' => self::getDownloadURL( $pathway, 'png' ),
-			'Acrobat (.pdf)' => self::getDownloadURL( $pathway, 'pdf' ),
+		'PathVisio (.gpml)' => self::getDownloadURL( $pathway, 'gpml' ),
+		'Scalable Vector Graphics (.svg)' => self::getDownloadURL( $pathway, 'svg' ),
+		'Gene list (.txt)' => self::getDownloadURL( $pathway, 'txt' ),
+		'Biopax level 3 (.owl)' => self::getDownloadURL( $pathway, 'owl' ),
+		'Eu.Gene (.pwf)' => self::getDownloadURL( $pathway, 'pwf' ),
+		'Png image (.png)' => self::getDownloadURL( $pathway, 'png' ),
+		'Acrobat (.pdf)' => self::getDownloadURL( $pathway, 'pdf' ),
 		];
 		$downloadlist = '';
 		foreach ( array_keys( $download ) as $key ) {
@@ -489,13 +492,16 @@ DROPDOWN;
 	 */
 	protected function renderDescription() {
 		$msg = new RawMessage( "$1" );
-		return $msg->params( $this->xpathContent(
-			"/gpml:Pathway/gpml:Comment[@Source='WikiPathways-description']"
-		) )->toString( Message::FORMAT_PARSE );
+		return $msg->params(
+			$this->xpathContent(
+				"/gpml:Pathway/gpml:Comment[@Source='WikiPathways-description']"
+			)
+		)->toString( Message::FORMAT_PARSE );
 	}
 
 	/**
 	 * Get the title text
+	 *
 	 * @return string the title of this pathway
 	 */
 	protected function getTitle() {

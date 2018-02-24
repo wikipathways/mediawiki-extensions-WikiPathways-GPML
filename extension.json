@@ -19,8 +19,6 @@
 	},
 	"callback": "WikiPathways\\GPML\\Hook::onRegistration",
 	"Hooks": {
-		"off-ParserBeforeStrip": "WikiPathways\\PathwayPage::render",
-		"off-BeforePageDisplay": "WikiPathways\\PathwayPage::addPreloaderScript",
 		"PageContentSave": "WikiPathways\\GPML\\Hook::checkGpml",
 		"PageSaveComplete": "WikiPathways\\GPML\\Hook::updateAfterSave",
 		"CodeEditorGetPageLanguage": "WikiPathways\\GPML\\Hook::onCodeEditorGetPageLanguage",
@@ -100,8 +98,7 @@
 		"WikiPathways\\GPML\\AuthorInfo": "src/AuthorInfo.php",
 		"WikiPathways\\GPML\\Hook": "src/Hook.php",
 		"WikiPathways\\GPML\\ContentHandler": "src/ContentHandler.php",
-		"WikiPathways\\GPML\\Content": "src/Content.php",
-		"WikiPathways\\GPML\\PathwayPage": "src/PathwayPage.php"
+		"WikiPathways\\GPML\\Content": "src/Content.php"
 	},
 	"DefaultUserOptions": {
 		"usebetatoolbar": true

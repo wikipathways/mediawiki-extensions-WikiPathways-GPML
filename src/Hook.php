@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @author Mark A. Hershberger
+ * @author  Mark A. Hershberger
  * @file
  * @ingroup Extensions
  */
@@ -52,6 +52,7 @@ class Hook {
 
 	/**
 	 * Set up parsing functions and the like
+	 *
 	 * @param Parser &$parser object
 	 */
 	public static function onParserFirstCallInit( Parser &$parser ) {
@@ -84,14 +85,16 @@ class Hook {
 	 *
 	 * @param string $modelName the content model we have
 	 * @param ContentHandler &$handler the handler we provide if we
-	 *     know what to do with the model given.
+	 *                                  know what to do with the
+	 *                                  model given.
 	 *
 	 * @return bool false when GPML is given
 	 */
 	static function onContentHandlerForModelID( $modelName, &$handler ) {
 		if ( $modelName === CONTENT_MODEL_GPML
-			 # FIXME Temporary backcompat
-			 || $modelName === "pathway" ) {
+			// FIXME Temporary backcompat
+			|| $modelName === "pathway"
+		) {
 			$handler = new ContentHandler;
 			return false;
 		}
@@ -120,9 +123,8 @@ class Hook {
 		// Flag that can be set to disable validation
 		global $wpiDisableValidation;
 
-		if (
-			!$wpiDisableValidation &&
-			$wikiPage->getTitle()->getNamespace() == NS_PATHWAY
+		if ( !$wpiDisableValidation
+			&& $wikiPage->getTitle()->getNamespace() == NS_PATHWAY
 		) {
 			$text = $content->getNativeData();
 			$error = Pathway::validateGpml( $text );
@@ -142,13 +144,16 @@ class Hook {
 	 * @param null $section (No longer used)
 	 * @param int &$flags passed to WikiPage::doEditContent()
 	 * @param Revision $revision of the saved content. If the save did
-	 *     not result in the creation of a new revision (e.g. the
-	 *     submission was equal to the latest revision), this
-	 *     parameter may be null (null edits, or "no-op"). However,
-	 *     there are reports (see phab:T128838) that it's instead set
-	 *     to that latest revision.
+	 *                             not result in the creation of a new
+	 *                             revision (e.g. the submission was
+	 *                             equal to the latest revision), this
+	 *                             parameter may be null (null edits, or
+	 *                             "no-op"). However, there are reports
+	 *                             (see phab:T128838) that it's instead
+	 *                             set to that latest revision.
 	 * @param Status $status Status object about to
-	 *     be returned by doEditContent()
+	 *                             be returned by
+	 *                             doEditContent()
 	 * @param int $baseRevId the rev ID (or false) this edit was based on
 	 * @param int $undidRevId the rev ID (or 0) this edit undid
 	 *

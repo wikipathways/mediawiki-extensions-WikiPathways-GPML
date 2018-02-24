@@ -17,7 +17,7 @@
  *
  * @file
  * @ingroup Extensions
- * @author Mark A. Hershberger
+ * @author  Mark A. Hershberger
  */
 
 namespace WikiPathways\GPML;

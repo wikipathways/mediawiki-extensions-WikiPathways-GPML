@@ -21,10 +21,8 @@
  */
 namespace WikiPathways\GPML;
 
-use AjaxResponse;
 use DOMDocument;
 use DOMElement;
-use RequestContext;
 use Title;
 use User;
 
@@ -36,6 +34,7 @@ class AuthorInfo {
 
 	/**
 	 * Constructor
+	 *
 	 * @param User $user who is looking
 	 * @param Title $title to check
 	 */
@@ -47,6 +46,7 @@ class AuthorInfo {
 
 	/**
 	 * Get the number of edits this editor made
+	 *
 	 * @return int
 	 */
 	public function getEditCount() {
@@ -55,6 +55,7 @@ class AuthorInfo {
 
 	/**
 	 * Get the timestamp of their first edit
+	 *
 	 * @return int
 	 */
 	public function getFirstEdit() {
@@ -62,13 +63,13 @@ class AuthorInfo {
 	}
 
 	private function load() {
-		$dbr = wfGetDB( DB_SLAVE );
+		$dbr = wfGetDB( DB_REPLICA );
 		$res = $dbr->select(
 			"revision",
 			[ 'COUNT(rev_user) AS editCount', 'MIN(rev_timestamp) AS firstEdit' ],
 			[
-				'rev_user' => $this->user->getId(),
-				'rev_page' => $this->title->getArticleId()
+			'rev_user' => $this->user->getId(),
+			'rev_page' => $this->title->getArticleId()
 			], __METHOD__
 		);
 		$row = $dbr->fetchObject( $res );
@@ -79,6 +80,7 @@ class AuthorInfo {
 
 	/**
 	 * See if this looks like an email
+	 *
 	 * @param string $name to check
 	 * @return bool
 	 */
@@ -94,6 +96,7 @@ class AuthorInfo {
 
 	/**
 	 * Get a name to display for this author.
+	 *
 	 * @return string
 	 */
 	public function getDisplayName() {
@@ -122,7 +125,7 @@ class AuthorInfo {
 		$name = $this->getDisplayName();
 		$href = $this->getAuthorLink();
 		$link = "<A href=\"$href\" title=\"Number of edits: {$this->editCount}\">" .
-			htmlspecialchars( $name ) . "</A>";
+		htmlspecialchars( $name ) . "</A>";
 		return $link;
 	}
 

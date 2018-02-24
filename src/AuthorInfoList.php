@@ -51,7 +51,7 @@ class AuthorInfoList {
 	}
 
 	private function load() {
-		$dbr = wfGetDB( DB_SLAVE );
+		$dbr = wfGetDB( DB_REPLICA );
 		$limit = '';
 		if ( $this->limit ) {
 			$limit = "LIMIT 0, {$this->limit}";
@@ -87,6 +87,7 @@ class AuthorInfoList {
 
 	/**
 	 * Place original author in first position
+	 *
 	 * @return ordered author list
 	 */
 	public function originalAuthorFirst() {
@@ -107,6 +108,7 @@ class AuthorInfoList {
 	 * NOT USED. RENDERING DONE IN JS.
 	 *
 	 * Render the author list.
+	 *
 	 * @return A HTML snipped containing the author list
 	 */
 	public function renderAuthorList() {
@@ -119,6 +121,7 @@ class AuthorInfoList {
 
 	/**
 	 * Get an XML document containing the author info
+	 *
 	 * @return DOMDocument
 	 */
 	public function getXml() {
@@ -134,9 +137,10 @@ class AuthorInfoList {
 
 	/**
 	 * Called from javascript to get the author list.
+	 *
 	 * @param int $pageId The id of the page to get the authors for.
 	 * @param int $limit Limit the number of authors to query. Leave
-	 *                   empty to get all authors.
+	 *                           empty to get all authors.
 	 * @param bool $includeBots Whether to include users marked as bot.
 	 * @return An xml document containing all authors for the given page
 	 */
@@ -179,8 +183,8 @@ class AuthorInfoList {
 
 		$id = $parser->getTitle()->getArticleId();
 		return "<div id='authorInfoContainer'></div><script type='text/javascript'>"
-			   . "AuthorInfo.init('authorInfoContainer', '$id', '$limit', '$bots');"
-			   . "</script>";
+		 . "AuthorInfo.init('authorInfoContainer', '$id', '$limit', '$bots');"
+		 . "</script>";
 	}
 
 }
