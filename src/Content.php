@@ -173,10 +173,10 @@ class Content extends TextContent {
 			->plain();
 		}
 
-		$this->output->addJsConfigVars( "pathwayJsonData", $jsonData );
-		$this->output->addModule( [ "wpi.pvjs", "wpi.PathwayLoader" ] );
-		return wfMessage( "wp-gpml-diagram" )->params( $pathway->getSvg(), $jsonData )
-		->parse();
+		$this->output->addJsConfigVars( "pvjsInput", $jsonData );
+		$this->output->addModules( [ "wpi.PathwayLoader" ] );
+		return wfMessage( "wp-gpml-diagram" )->params( $pathway->getSvg() )
+		->plain();
 	}
 	/**
 	 * @return method name

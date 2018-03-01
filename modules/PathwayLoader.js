@@ -15,7 +15,7 @@ if (window.hasOwnProperty("XrefPanel")) {
 	}
 }
 
-var pvjsInput = $jsonData;
+var pvjsInput = mw.config.get( "pvjsInput" );
 pvjsInput.onReady = function() {};
 window.addEventListener('load', function() {
 	pvjs.Pvjs(".Container", pvjsInput);
