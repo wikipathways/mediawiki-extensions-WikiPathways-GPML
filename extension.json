@@ -53,6 +53,9 @@
 			"scripts": [
 				"PathwayLoader.js"
 			],
+			"styles": [
+				"Container.css"
+			],
 			"dependencies": "wpi.pvjs"
 		},
 		"wpi.AuthorInfo": {
