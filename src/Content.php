@@ -103,7 +103,7 @@ class Content extends TextContent {
 			$html = '';
 		}
 
-		$output->addModules( [ "wpi.AuthorInfo", "wpi.Pathway" ] );
+		$output->addModules( [ "wpi.AuthorInfo", "wpi.Pathway", "wpi.toggleButton" ] );
 
 		$output->setTitleText( $this->getTitle() );
 		$output->setText( $html );
