@@ -11,7 +11,7 @@
 	"wp-gpml-page-layout": "<!--This is the template for the Pathway page.  The parameters are:\n1 - Navbars\n2 - PrivateWarning\n3 - Title\n4 - Diagram\n5 - DiagramFooter\n6 - AuthorInfo\n7 - Description\n8 - QualityTags\n9 - OntologyTags\n10 - Bibliography\n11 - History\n12 - Xrefs\n13 - LinkToFullPathwayPage\n-->\n$1\n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$10\n$11",
 	"wp-gpml-widget-layout": "<!--This is the template for the Pathway widget page.  The parameters are:\n1 - Navbars\n2 - PrivateWarning\n3 - Title\n4 - Diagram\n5 - DiagramFooter\n6 - AuthorInfo\n7 - Description\n8 - QualityTags\n9 - OntologyTags\n10 - Bibliography\n11 - History\n12 - Xrefs\n13 - LinkToFullPathwayPage\n-->\n$4\n$13",
 	"wp-gpml-private-warning": "<div class='private_warn'>[[File:lock.png]]This pathway will not be visible to other users until $1.\nTo make it publicly available before that time, <span class='plainlinks'>[{{fullurl:{{FULLPAGENAMEE}}|action=manage_permissions}} change the permissions]</span>.</div>",
-	"wp-gpml-title": "<pageEditor id='pageTitle' type='title'>$1</pageEditor>",
+	"wp-gpml-title": "<pageEditor id='firstHeading' type='title'>$1</pageEditor>",
 	"wp-gpml-diagram-no-json": "<div class='diagram-container'><div class='Container'><img src='$1' style='height: inherit;'></div></div><div><p>Note: Could not render interactive diagram. Displaying static pathway diagram instead.</p></div>",
 	"wp-gpml-diagram": "<div class='diagram-container'><div class='Container'>$1</div></div>",
 	"wp-gpml-history": "== History ==\n<pathwayHistory></pathwayHistory>",

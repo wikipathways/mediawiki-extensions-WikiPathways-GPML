@@ -19,7 +19,6 @@
 	},
 	"callback": "WikiPathways\\GPML\\Hook::onRegistration",
 	"Hooks": {
-		"PageContentSave": "WikiPathways\\GPML\\Hook::checkGpml",
 		"PageSaveComplete": "WikiPathways\\GPML\\Hook::updateAfterSave",
 		"CodeEditorGetPageLanguage": "WikiPathways\\GPML\\Hook::onCodeEditorGetPageLanguage",
 		"ContentHandlerForModelID": "WikiPathways\\GPML\\Hook::onContentHandlerForModelID"

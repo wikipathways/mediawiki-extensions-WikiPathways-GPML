@@ -22,6 +22,7 @@
 
 namespace WikiPathways\GPML;
 
+use DOMDocument;
 use Message;
 use ParserOptions;
 use ParserOutput;
@@ -31,6 +32,7 @@ use SimpleXMLElement;
 use TextContent;
 use Title;
 use User;
+use WikiPathways\Organism;
 use WikiPathways\Pathway;
 
 /**
@@ -44,6 +46,7 @@ class Content extends TextContent {
 	protected $revId;
 	protected $request;
 	protected $user;
+	protected $validationErrors = [];
 
 	/**
 	 * @param string $text GPML code.
@@ -54,6 +57,104 @@ class Content extends TextContent {
 		$this->output = RequestContext::getMain()->getOutput();
 		$this->request = RequestContext::getMain()->getRequest();
 		$this->user = RequestContext::getMain()->getUser();
+	}
+
+	/**
+	 * Get the first of any validation errors.
+	 * @return string
+	 */
+	public function getValidationError() {
+		if ( count( $this->validationErrors[0] ) ) {
+			return $this->validationErrors[0];
+		}
+	}
+
+	/**
+	 * Validates the GPML code and returns the error if it's invalid
+	 *
+	 * @return bool
+	 */
+	public function isValid() {
+		$gpml = $this->getTextForSearchIndex();
+		// First, check if species is supported
+		$msg = $this->checkGpmlSpecies( $gpml );
+		if ( $msg ) {
+			$this->validationErrors[] = $msg;
+			return false;
+		}
+
+		// Second, validate GPML to schema
+		$xml = new DOMDocument();
+		$parsed = $xml->loadXML( $gpml );
+		if ( !$parsed ) {
+			$this->validationErrors[] = "Error: no valid XML provided\n$gpml";
+			return false;
+		}
+
+		if ( !method_exists( $xml->firstChild, "getAttribute" ) ) {
+			$this->validationErrors[] = "Not valid GPML!";
+			return false;
+		}
+
+		$xmlNs = $xml->firstChild->getAttribute( 'xmlns' );
+		$schema = Pathway::getSchema( $xmlNs );
+		if ( !$schema ) {
+			$this->validationErrors[] = "Error: no xsd found for $xmlNs\n$gpml";
+			return false;
+		}
+
+		if ( !$xml->schemaValidate( WPI_SCRIPT_PATH . "/bin/$schema" ) ) {
+			$error = libxml_get_last_error();
+			$this->validationErrors[] = $gpml[$error->line - 1] . "\n";
+			$this->validationErrors[] = str_repeat( '-', $error->column ) . "^\n";
+
+			switch ( $error->level ) {
+			case LIBXML_ERR_WARNING:
+				$this->validationErrors[] = "Warning {$error->code}: ";
+				break;
+			case LIBXML_ERR_ERROR:
+				$this->validationErrors[] = "Error {$error->code}: ";
+				break;
+			case LIBXML_ERR_FATAL:
+				$this->validationErrors[] = "Fatal Error {$error->code}: ";
+				break;
+			}
+
+			$this->validationErrors[] = sprintf(
+				"%s %s (Line: %d Column: %d)", trim( $error->message ),
+				$error->file, $error->line, $error->column
+			);
+			return false;
+		}
+		return true;
+	}
+
+	private function checkGpmlSpecies( $gpml ) {
+		$gpml = utf8_encode( $gpml );
+		// preg_match can fail on very long strings, so first try to
+		// find the <Pathway ...> part with strpos
+		$startTag = strpos( $gpml, "<Pathway" );
+		if ( !$startTag ) {
+			return "Unable to find start of '<Pathway ...>' tag.";
+		}
+		$endTag = strpos( $gpml, ">", $startTag );
+		if ( !$endTag ) {
+			return "Unable to find end of '<Pathway ...>' tag.";
+		}
+
+		if (
+			preg_match( "/<Pathway.*Organism=\"(.*?)\"/us",
+						substr( $gpml, $startTag, $endTag - $startTag ),
+						$match )
+		) {
+			$species = $match[1];
+			$organisms = array_keys( Organism::listOrganisms() );
+			if ( !in_array( $species, $organisms ) ) {
+				return "The organism '$species' for the pathway is not supported.";
+			}
+		} else {
+			return "The pathway doesn't have an organism attribute.";
+		}
 	}
 
 	/**
@@ -68,6 +169,17 @@ class Content extends TextContent {
 	 */
 	public function preSaveTransform( Title $title, User $user, ParserOptions $popts ) {
 		return $this;
+	}
+
+	/**
+	 * @param string $format
+	 *
+	 * @return string
+	 *
+	 * @see Content::serialize
+	 */
+	public function serialize( $format = null ) {
+		return $this->getNativeData();
 	}
 
 	/**
@@ -103,7 +215,10 @@ class Content extends TextContent {
 			$html = '';
 		}
 
-		$output->addModules( [ "wpi.AuthorInfo", "wpi.Pathway", "wpi.toggleButton" ] );
+		// These should be closer to where they modules that they go with are invoked.
+		$output->addModules(
+			[ "wpi.AuthorInfo", "wpi.Pathway", "wpi.toggleButton", "wpi.PageEditor" ]
+		);
 
 		$output->setTitleText( $this->getTitle() );
 		$output->setText( $html );
