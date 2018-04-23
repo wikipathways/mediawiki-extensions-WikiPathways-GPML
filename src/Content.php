@@ -23,6 +23,7 @@
 namespace WikiPathways\GPML;
 
 use DOMDocument;
+use Exception;
 use Html;
 use Message;
 use ParserOptions;
@@ -35,6 +36,7 @@ use Title;
 use User;
 use WikiPathways\Organism;
 use WikiPathways\Pathway;
+use WikiTextContent;
 
 /**
  * Content for Pathway pages
@@ -48,6 +50,7 @@ class Content extends TextContent {
 	private $request;
 	private $user;
 	private $validationErrors = [];
+	private $wikitext;
 
 	/**
 	 * @param string $text GPML code.
@@ -183,6 +186,28 @@ class Content extends TextContent {
 		return $this->getNativeData();
 	}
 
+	public function getParserOutput(
+		Title $title, $revId = null, ParserOptions $options = null, $generateHtml = true
+	) {
+		$po = null;
+		try {
+			\MediaWiki\suppressWarnings();
+			$this->parsed = new SimpleXMLElement( $this->getNativeData() );
+			\MediaWiki\restoreWarnings();
+			$this->parsed->registerXPathNamespace( "gpml", "http://pathvisio.org/GPML/2013a" );
+		} catch ( Exception $e ) {
+			// Not XML, use Wikitext
+			\MediaWiki\restoreWarnings();
+			$this->wikitext = new WikiTextContent( $this->getNativeData() );
+			$po = $this->wikitext->getParserOutput( $title, $revId, $options, $generateHtml );
+		}
+		if ( $po === null ) {
+			$po = parent::getParserOutput( $title, $revId, $options, $generateHtml );
+		}
+
+		return $po;
+	}
+
 	/**
 	 * Set the HTML and add the appropriate styles
 	 *
@@ -196,12 +221,14 @@ class Content extends TextContent {
 		Title $title, $revId, ParserOptions $options, $generateHtml,
 		ParserOutput &$output
 	) {
+		if ( $this->wikitext ) {
+			return $this->wikitext->fillParserOutput(
+				$title, $revId, $options, $generateHtml, $output
+			);
+		}
 		$this->title = $title;
 		$this->revId = $revId;
 		$this->pathway = Pathway::newFromTitle( $this->title );
-
-		$this->parsed = new SimpleXMLElement( $this->getNativeData() );
-		$this->parsed->registerXPathNamespace( "gpml", "http://pathvisio.org/GPML/2013a" );
 
 		if ( !$options ) {
 			// NOTE: use canonical options per default to produce
@@ -229,6 +256,9 @@ class Content extends TextContent {
 	 * @return Message Page for GPML
 	 */
 	protected function getHtml() {
+		if ( $this->wikitext ) {
+			return $this->wikitext->getHtml();
+		}
 		return wfMessage( "wp-gpml-page-layout" )->params( $this->getSections() )->text();
 	}
 
@@ -237,13 +267,13 @@ class Content extends TextContent {
 	 */
 	private function getSections() {
 		return [
-		$this->renderPrivateWarning(),
-		$this->renderTitle(), $this->renderAuthorInfo(),
-		$this->renderDiagram(), $this->renderDiagramFooter(),
-		$this->renderDescription(), $this->renderQualityTags(),
-		$this->renderOntologyTags(), $this->renderBibliography(),
-		$this->renderHistory(), $this->renderXrefs(),
-		$this->renderLinkToFullPathwayPage()
+			$this->renderPrivateWarning(),
+			$this->renderTitle(), $this->renderAuthorInfo(),
+			$this->renderDiagram(), $this->renderDiagramFooter(),
+			$this->renderDescription(), $this->renderQualityTags(),
+			$this->renderOntologyTags(), $this->renderBibliography(),
+			$this->renderHistory(), $this->renderXrefs(),
+			$this->renderLinkToFullPathwayPage()
 		];
 	}
 
