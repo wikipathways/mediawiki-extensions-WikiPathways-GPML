@@ -341,7 +341,7 @@ class Content extends TextContent {
 				"a", [ "class" => "button", "href" => $href, "title" => $label ],
 				Html::rawElement( "span", [], $label )
 			)
-		) . wfMessage( "wp-gpml-diagram-help-link" )->parse();
+		);
 	}
 
 	/**
@@ -350,7 +350,9 @@ class Content extends TextContent {
 	private function renderDiagramFooter() {
 		return Html::rawElement(
 			"div", [ 'id' => 'diagram-footer' ],
-			$this->renderEditButton() . $this->renderDownloadDropdown()
+			$this->renderEditButton()
+			. wfMessage( "wp-gpml-diagram-help-link" )->parse()
+			. $this->renderDownloadDropdown()
 		);
 	}
 
