@@ -79,6 +79,14 @@
 				"Dropdown.css",
 				"Button.css"
 			]
+		},
+		"wpi.openInPathVisio": {
+			"scripts": "openInPathVisio.js",
+			"dependencies": [
+				"mediawiki.widgets",
+				"oojs-ui-core",
+				"oojs-ui-windows"
+			]
 		}
 	},
 	"ContentHandlers": {
