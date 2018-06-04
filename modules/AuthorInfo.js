@@ -37,7 +37,7 @@ AuthorInfo.loadAuthors = function(limit) {
 	$.ajax(
 		mw.util.wikiScript() + '?' + $.param( {
 			action: 'ajax',
-			rs: "jsGetAuthors",
+			rs: 'WikiPathways\\GPML\\AuthorInfoList::jsGetAuthors',
 			rsargs: [AuthorInfo.pageId, parseInt(limit) + 1, true] //true=includeBots
 		} ), {
 			complete: AuthorInfo.loadAuthorsCallback,

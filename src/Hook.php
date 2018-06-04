@@ -42,12 +42,8 @@ class Hook {
 			define( 'CONTENT_FORMAT_GPML', 'gpml' );
 		}
 
-		// FIXME this shim is in the global context, see
-		// WikiPathways.php
-		// FIX would be to write an API call (or just
-		// fit the information this produces into GPML).
 		global $wgAjaxExportList;
-		$wgAjaxExportList[] = "jsGetAuthors";
+		$wgAjaxExportList[] = "WikiPathways\\GPML\\AuthorInfoList::jsGetAuthors";
 	}
 
 	/**

@@ -36,6 +36,7 @@ use Title;
 use User;
 use WikiPathways\Organism;
 use WikiPathways\Pathway;
+use WikiPathways\PathwayCache\Factory;
 use WikiTextContent;
 
 /**
@@ -311,18 +312,23 @@ class Content extends TextContent {
 	 */
 	private function renderDiagram() {
 		$pathway = $this->pathway;
-		$jsonData = $pathway->getPvjson();
-		if ( !$jsonData ) {
-			$pngPath = $pathway->getFileURL( FILETYPE_PNG, false );
+		$json = Factory::getCache( "JSON", $pathway );
+		if ( !$json->isCached() ) {
+			$png = Factory::getCache( "PNG", $pathway );
 
-			return wfMessage( "wp-gpml-diagram-no-json" )->params( $pngPath )
-			->plain();
+			return wfMessage(
+				"wp-gpml-diagram-no-json"
+			)->params( $png->getURL() )->plain();
 		}
 
-		$this->output->addJsConfigVars( "pvjsString", $jsonData );
+		$this->output->addJsConfigVars( "pvjsString", $json );
 		$this->output->addModules( [ "wpi.PathwayLoader" ] );
-		return wfMessage( "wp-gpml-diagram" )->params( $pathway->getSvg() )
-		->plain();
+
+		$svg = Factory::getCache( "SVG", $pathway );
+		if ( $svg->isCached() ) {
+			return wfMessage( "wp-gpml-diagram" )->params( $svg->fetchText() )
+				->plain();
+		}
 	}
 
 	private function renderLoggedInEditButton() {

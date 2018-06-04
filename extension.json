@@ -103,9 +103,9 @@
 		"WikiPathways\\GPML\\ContentHandler": "src/ContentHandler.php",
 		"WikiPathways\\GPML\\Content": "src/Content.php"
 	},
-	"DefaultUserOptions": {
-		"usebetatoolbar": true
-	},
+	"AjaxExportList": [
+		"WikiPathways\\GPML\\AuthorInfoList::jsGetAuthors"
+	],
 	"Config": {
 		"prefix": "wpi",
 		"DisableValidation": true
