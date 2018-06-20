@@ -48,14 +48,16 @@
 		"remoteExtPath": "GPML/modules"
 	},
 	"ResourceModules": {
-		"wpi.PathwayLoader": {
+		"wpi.PathwayLoader.js": {
 			"scripts": [
 				"PathwayLoader.js"
 			],
+			"dependencies": "wpi.pvjs"
+		},
+		"wpi.PathwayLoader.css": {
 			"styles": [
 				"Container.css"
-			],
-			"dependencies": "wpi.pvjs"
+			]
 		},
 		"wpi.AuthorInfo": {
 			"scripts": [
