@@ -1,35 +1,35 @@
-var AuthorInfo = {};
+document.AuthorInfo = {};
 /**
  * Create an author list for the given page and add it to the
  * document in the given div element
  */
-AuthorInfo.init = function(toDiv) {
+document.AuthorInfo.init = function(toDiv) {
 	var authorEL = document.getElementById(toDiv);
-	AuthorInfo.pageId = authorEL.dataset.pageid;
-	AuthorInfo.showBots = authorEL.dataset.showbots;
+	document.AuthorInfo.pageId = authorEL.dataset.pageid;
+	document.AuthorInfo.showBots = authorEL.dataset.showbots;
 
 	var parentElm = document.getElementById(toDiv);
 
 	//The top container
 	var contentDiv = document.createElement("div");
 	contentDiv.id = "AuthorInfo_" + authorEL.pageId;
-	AuthorInfo.contentDiv = contentDiv;
+	document.AuthorInfo.contentDiv = contentDiv;
 	parentElm.appendChild(contentDiv);
 
 	var authorDiv = document.createElement("div");
-	AuthorInfo.contentDiv.appendChild(authorDiv);
-	AuthorInfo.authorDiv = authorDiv;
+	document.AuthorInfo.contentDiv.appendChild(authorDiv);
+	document.AuthorInfo.authorDiv = authorDiv;
 
 	//Overlay div to show errors
-	AuthorInfo.errorDiv = document.createElement("div");
-	AuthorInfo.errorDiv.className = "authorerror";
-	AuthorInfo.contentDiv.appendChild(AuthorInfo.errorDiv);
+	document.AuthorInfo.errorDiv = document.createElement("div");
+	document.AuthorInfo.errorDiv.className = "authorerror";
+	document.AuthorInfo.contentDiv.appendChild(document.AuthorInfo.errorDiv);
 
-	AuthorInfo.loadAuthors(authorEL.dataset.limit);
+	document.AuthorInfo.loadAuthors(authorEL.dataset.limit);
 };
 
-AuthorInfo.loadAuthors = function(limit) {
-	AuthorInfo.lastLimit = limit;
+document.AuthorInfo.loadAuthors = function(limit) {
+	document.AuthorInfo.lastLimit = limit;
 	if(limit == 0) {
 		limit = -1;
 	}
@@ -38,20 +38,20 @@ AuthorInfo.loadAuthors = function(limit) {
 		mw.util.wikiScript() + '?' + $.param( {
 			action: 'ajax',
 			rs: 'WikiPathways\\GPML\\AuthorInfoList::jsGetAuthors',
-			rsargs: [AuthorInfo.pageId, parseInt(limit) + 1, true] //true=includeBots
+			rsargs: [document.AuthorInfo.pageId, parseInt(limit) + 1, true] //true=includeBots
 		} ), {
-			complete: AuthorInfo.loadAuthorsCallback,
+			complete: document.AuthorInfo.loadAuthorsCallback,
 			dataType: "xml"
 		} );
 };
 
-AuthorInfo.loadAuthorsCallback = function(xhr) {
-	if(AuthorInfo.checkResponse(xhr)) {
+document.AuthorInfo.loadAuthorsCallback = function(xhr) {
+	if(document.AuthorInfo.checkResponse(xhr)) {
 		var xml = xhr.responseXML;
 		var elements = xml.getElementsByTagName("Author");
 
-		var showAll = AuthorInfo.lastLimit <= 0 ||
-			elements.length <= AuthorInfo.lastLimit;
+		var showAll = document.AuthorInfo.lastLimit <= 0 ||
+			elements.length <= document.AuthorInfo.lastLimit;
 
 		var html = "<span class='author'>";
 		var end = showAll ? elements.length : elements.length - 1;
@@ -71,38 +71,38 @@ AuthorInfo.loadAuthorsCallback = function(xhr) {
 				html += ", ";
 			}
 		}
-		if(!showAll && elements.length > AuthorInfo.lastLimit) {
-			html += ", <a href='javascript:AuthorInfo.showAllAuthors()' " +
+		if(!showAll && elements.length > document.AuthorInfo.lastLimit) {
+			html += ", <a href='javascript:document.AuthorInfo.showAllAuthors()' " +
 				"title='Click to show all authors'>et al.</a>";
 		}
-		AuthorInfo.authorDiv.innerHTML = html + "</span>";
+		document.AuthorInfo.authorDiv.innerHTML = html + "</span>";
 	}
 };
 
-AuthorInfo.showAllAuthors = function() {
-	AuthorInfo.loadAuthors(0);
+document.AuthorInfo.showAllAuthors = function() {
+	document.AuthorInfo.loadAuthors(0);
 };
 
-AuthorInfo.checkResponse = function(xhr) {
+document.AuthorInfo.checkResponse = function(xhr) {
 	if (xhr.readyState == 4){
 		if (xhr.status != 200) {
-			AuthorInfo.showError(xhr.statusText);
+			document.AuthorInfo.showError(xhr.statusText);
 		}
 	} else if ( xhr.readyState != "complete" ) {
-		AuthorInfo.showError(xhr.statusText);
+		document.AuthorInfo.showError(xhr.statusText);
 	}
 	return true;
 };
 
-AuthorInfo.showError = function(msg) {
-	AuthorInfo.errorDiv.style.display = "block";
-	AuthorInfo.errorDiv.innerHTML = "<p class='authorerror'>Error loading authors: " + msg +
-		" - <a href='javascript:AuthorInfo.hideError();'>close</a></p>";
+document.AuthorInfo.showError = function(msg) {
+	document.AuthorInfo.errorDiv.style.display = "block";
+	document.AuthorInfo.errorDiv.innerHTML = "<p class='authorerror'>Error loading authors: " + msg +
+		" - <a href='javascript:document.AuthorInfo.hideError();'>close</a></p>";
 };
 
-AuthorInfo.hideError = function() {
-	AuthorInfo.errorDiv.style.display = "none";
-	AuthorInfo.errorDiv.innerHTML = "";
+document.AuthorInfo.hideError = function() {
+	document.AuthorInfo.errorDiv.style.display = "none";
+	document.AuthorInfo.errorDiv.innerHTML = "";
 };
 
-$(document).ready(function() {AuthorInfo.init("authorInfoContainer");});
+$(document).ready(function() {document.AuthorInfo.init("authorInfoContainer");});
