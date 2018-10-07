@@ -48,6 +48,12 @@
 		"remoteExtPath": "GPML/modules"
 	},
 	"ResourceModules": {
+		"wpi.widget": {
+			"styles": "Widget.css",
+			"dependencies": [
+				"jquery", "wpi.pvjs"
+			]
+		},
 		"wpi.PathwayLoader.js": {
 			"scripts": [
 				"PathwayLoader.js"
@@ -98,12 +104,16 @@
 	"SyntaxHighlightModels": {
 		"xml": "xml"
 	},
+	"Actions": {
+		"widget": "WikiPathways\\GPML\\Widget"
+	},
 	"AutoloadClasses": {
 		"WikiPathways\\GPML\\AuthorInfoList": "src/AuthorInfoList.php",
 		"WikiPathways\\GPML\\AuthorInfo": "src/AuthorInfo.php",
 		"WikiPathways\\GPML\\Hook": "src/Hook.php",
 		"WikiPathways\\GPML\\ContentHandler": "src/ContentHandler.php",
-		"WikiPathways\\GPML\\Content": "src/Content.php"
+		"WikiPathways\\GPML\\Content": "src/Content.php",
+		"WikiPathways\\GPML\\Widget": "src/Widget.php"
 	},
 	"AjaxExportList": [
 		"WikiPathways\\GPML\\AuthorInfoList::jsGetAuthors"

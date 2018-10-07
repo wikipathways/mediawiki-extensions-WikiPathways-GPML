@@ -14,6 +14,7 @@
 	"wp-gpml-title": "<pageEditor id='firstHeading' type='title'>$1</pageEditor>",
 	"wp-gpml-diagram-no-json": "<div class='diagram-container'><div class='Container'><img src='$1' style='height: inherit;'></div></div><div><p>Note: Could not render interactive diagram. Displaying static pathway diagram instead.</p></div>",
 	"wp-gpml-diagram": "<div class='diagram-container'><div class='Container'>$1</div></div>",
+	"wp-gpml-widget-diagram": "<div class='diagram-container'><div class='Container'>$1</div></div>",
 	"wp-gpml-history": "== History ==\n<pathwayHistory></pathwayHistory>",
 	"wp-gpml-xrefs": "== External references ==\n===DataNodes===\n{{CheckAvailable|data={{ #pathwayInfo: {{PAGENAME}}|datanodes}}|msg=''No datanodes''}}\n===Annotated Interactions===\n{{CheckAvailable|data={{ #pathwayInfo: {{PAGENAME}}|interactionAnnotations}}|msg=''No annotated interactions''}}",
 	"wp-gpml-link-to-full-page": "<div style='position:absolute;overflow:visible;bottom:0;left:15px;'><div id='logolink'><a id='wplink' target='top' href='$1'>View at [[File:WikiPathwaysName.png]]</a></div></div>",
