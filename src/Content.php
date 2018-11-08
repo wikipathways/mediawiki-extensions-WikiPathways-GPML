@@ -466,11 +466,11 @@ class Content extends TextContent {
 			'Pathway' => 'gpml',
 			'Scalable Vector Graphics' => 'svg',
 			'Gene list' => 'txt',
-			'Png image' => 'png'
+			'Png image' => 'png',
+			'Biopax level 3' => 'owl',
+			'Eu.Gene' => 'pwf',
+			'Acrobat' => 'pdf'
 		];
-		/* 'Biopax level 3' => 'owl', */
-		/* 'Eu.Gene' => 'pwf', */
-		/* 'Acrobat => 'pdf', */
 
 		$this->output->addModules( [ "wpi.Dropdown" ] );
 		$downloadLinks = "";
