@@ -52,6 +52,7 @@ class Content extends TextContent {
 	private $user;
 	private $validationErrors = [];
 	private $wikitext;
+	private $pathway;
 
 	/**
 	 * @param string $text GPML code.
@@ -209,6 +210,23 @@ class Content extends TextContent {
 		return $po;
 	}
 
+	public function setTitle( Title $title ) {
+		$this->title = $title;
+	}
+
+	public function setRev( $revId ) {
+		$this->revId = $revId;
+	}
+
+	public function getPathway() {
+		if ( !$this->pathway ) {
+			$this->pathway = Pathway::newFromTitle(
+				$this->title
+			);
+		}
+		return $this->pathway;
+	}
+
 	/**
 	 * Set the HTML and add the appropriate styles
 	 *
@@ -219,17 +237,16 @@ class Content extends TextContent {
 	 * @param ParserOutput &$output The output object to fill (reference).
 	 */
 	protected function fillParserOutput(
-		Title $title, $revId, ParserOptions $options, $generateHtml,
-		ParserOutput &$output
+		Title $title, $revId, ParserOptions $options,
+		$generateHtml, ParserOutput &$output
 	) {
 		if ( $this->wikitext ) {
 			return $this->wikitext->fillParserOutput(
 				$title, $revId, $options, $generateHtml, $output
 			);
 		}
-		$this->title = $title;
-		$this->revId = $revId;
-		$this->pathway = Pathway::newFromTitle( $this->title );
+		$this->setTitle( $title );
+		$this->setRev( $revId );
 
 		if ( !$options ) {
 			// NOTE: use canonical options per default to produce
@@ -271,8 +288,10 @@ class Content extends TextContent {
 			$this->renderPrivateWarning(),
 			$this->renderTitle(), $this->renderAuthorInfo(),
 			$this->renderDiagram(), $this->renderDiagramFooter(),
-			$this->renderDescription(), $this->renderQualityTags(),
-			$this->renderOntologyTags(), $this->renderBibliography(),
+			$this->renderDescription(),
+			$this->renderQualityTags(),
+			$this->renderOntologyTags(),
+			$this->renderBibliography(),
 			$this->renderHistory(), $this->renderXrefs(),
 			$this->renderLinkToFullPathwayPage()
 		];
@@ -285,8 +304,9 @@ class Content extends TextContent {
 		global $wgLang;
 
 		$warn = '';
-		if ( !$this->pathway->isPublic() ) {
-			$perm = $this->pathway->getPermissionManager()->getPermissions();
+		$pathway = $this->getPathway();
+		if ( !$pathway->isPublic() ) {
+			$perm = $pathway->getPermissionManager()->getPermissions();
 			$expDate = "<b class='error'>Could not get "
 			. "permissions for this pathway</b>";
 			if ( $perm ) {
@@ -303,40 +323,48 @@ class Content extends TextContent {
 	 * @return method name
 	 */
 	private function renderTitle() {
-		return wfMessage( 'wp-gpml-title' )->params( $this->pathway->getName() )
+		return wfMessage( 'wp-gpml-title' )->params( $this->getPathway()->getName() )
 		->parse();
 	}
 
 	/**
-	 * @return method name
+	 * @return string svg content
 	 */
-	private function renderDiagram() {
-		$pathway = $this->pathway;
-		$json = Factory::getCache( "JSON", $pathway );
+	public static function renderDiagram() {
+		$json = Factory::getCache( "JSON", $this->getPathway() );
 		if ( !$json->isCached() ) {
-			$png = Factory::getCache( "PNG", $pathway );
+			$png = Factory::getCache(
+				"PNG", $this->getPathway()
+			);
 
 			return wfMessage(
 				"wp-gpml-diagram-no-json"
 			)->params( $png->getURL() )->plain();
 		}
 
-		$this->output->addJsConfigVars( "pvjsString", $json->render() );
-		$this->output->addModuleStyles( [ "wpi.PathwayLoader.css" ] );
-		$this->output->addModules( [ "wpi.PathwayLoader.js" ] );
+		$this->output->addJsConfigVars(
+			"pvjsString", $json->render()
+		);
+		$this->output->addModuleStyles(
+			[ "wpi.PathwayLoader.css" ]
+		);
+		$this->output->addModules(
+			[ "wpi.PathwayLoader.js" ]
+		);
 
-		$svg = Factory::getCache( "SVG", $pathway );
+		$svg = Factory::getCache( "SVG", $this->getPathway() );
 		if ( $svg->isCached() ) {
-			return wfMessage( "wp-gpml-diagram" )->params( $svg->fetchText() )
-				->plain();
+			return wfMessage( "wp-gpml-diagram" )->params(
+				$svg->fetchText()
+			)->plain();
 		}
 	}
 
 	private function renderLoggedInEditButton() {
 		$this->output->addJsConfigVars(
 			[
-				'identifier' => $this->pathway->getIdentifier(),
-				'version' => $this->pathway->getLatestRevision()
+				'identifier' => $this->getPathway()->getIdentifier(),
+				'version' => $this->getPathway()->getLatestRevision()
 			]
 		);
 		return Html::rawElement(
@@ -352,7 +380,7 @@ class Content extends TextContent {
 	private function renderEditButton() {
 		$this->output->addModules( [ "wpi.openInPathVisio" ] );
 		// Create edit button
-		if ( $this->user->isLoggedIn() && $this->pathway->getTitleObject()->userCan( 'edit' ) ) {
+		if ( $this->user->isLoggedIn() && $this->getPathway()->getTitleObject()->userCan( 'edit' ) ) {
 			return $this->renderLoggedInEditButton();
 		} else {
 			return $this->renderCannotEditButton();
@@ -362,13 +390,13 @@ class Content extends TextContent {
 	private function renderCannotEditButton() {
 		if ( !$this->user->isLoggedIn() ) {
 			$href = SpecialPage::getTitleFor( 'Userlogin' )->getFullURL( [
-				'returnto' => $this->pathway->getTitleObject()->getPrefixedURL()
+				'returnto' => $this->getPathway()->getTitleObject()->getPrefixedURL()
 			] );
 			$label = "Log in to edit pathway";
 		} elseif ( wfReadOnly() ) {
 			$href = "";
 			$label = "Database locked";
-		} elseif ( !$this->pathway->getTitleObject()->userCan( 'edit' ) ) {
+		} elseif ( !$this->getPathway()->getTitleObject()->userCan( 'edit' ) ) {
 			$href = "";
 			$label = "Editing is disabled";
 		}
@@ -438,7 +466,7 @@ class Content extends TextContent {
 	 */
 	private function renderLinkToFullPathwayPage() {
 		return wfMessage( "wp-gpml-link-to-full-page" )
-		->params( $this->pathway->getFullUrl() )->parse();
+		->params( $this->getPathway()->getFullUrl() )->parse();
 	}
 	/**
 	 * Provide rendered html for author info
@@ -477,7 +505,7 @@ class Content extends TextContent {
 		foreach ( $type as $name => $format ) {
 			$downloadLinks .= Html::rawElement(
 				"li", [], Html::rawElement(
-					"a", [ "href" => self::getDownloadURL( $this->pathway, $format ) ],
+					"a", [ "href" => self::getDownloadURL( $this->getPathway(), $format ) ],
 					wfMessage( "wp-gpml-download-link-text" )->params( $name, $format )
 				)
 			);

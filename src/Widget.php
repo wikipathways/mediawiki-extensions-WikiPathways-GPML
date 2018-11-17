@@ -73,9 +73,6 @@ class Widget extends FormlessAction {
 		$req = $this->getRequest();
 		$out->addModules( [ "wpi.widget" ] );
 
-		global $wgServer, $wgScriptPath;
-		$imgPath = "$wgServer/$wgScriptPath/extensions/WikiPathways/images/";
-
 		$version = $req->getVal( 'rev', 0 );
 		$label = $req->getVal( 'label' );
 		$xref = $req->getVal( 'xref' );
@@ -130,33 +127,10 @@ class Widget extends FormlessAction {
 			$pathway->setActiveRevision( $version );
 		}
 
-		$svg = $pathway->getFileURL( FILETYPE_IMG );
-		$png = $pathway->getFileURL( FILETYPE_PNG );
 		$out->addJsConfigVars( "kaavioHighlights", $highlights );
-		//		$gpml = $pathway->getFileURL( FILETYPE_GPML );
 
-		$json = Factory::getCache( "JSON", $pathway );
-		$ret = null;
-		if ( !$json->isCached() ) {
-			$png = Factory::getCache( "PNG", $pathway );
-
-			$ret = wfMessage(
-				"wp-gpml-diagram-no-json"
-			)->params( $png->getURL() )->plain();
-			$out->addWikiText( $ret );
-			return;
-		}
-
-		$out->addJsConfigVars( "pvjsString", $json->render() );
-		$out->addModuleStyles( [ "wpi.PathwayLoader.css" ] );
-		$out->addModules( [ "wpi.PathwayLoader.js" ] );
-
-		$svg = Factory::getCache( "SVG", $pathway );
-		if ( $svg->isCached() && !$ret) {
-			$out->addHTML( wfMessage(
-				"wp-gpml-widget-diagram"
-			)->params( $svg->fetchText() )->plain() );
-		}
+		$content = Content::newFromTitle( $this->getTitle() );
+		return $content->renderDiagram();
 	}
 
 	public function misc2() {
