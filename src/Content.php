@@ -286,13 +286,16 @@ class Content extends TextContent {
 	private function getSections() {
 		return [
 			$this->renderPrivateWarning(),
-			$this->renderTitle(), $this->renderAuthorInfo(),
-			$this->renderDiagram(), $this->renderDiagramFooter(),
+			$this->renderTitle(),
+			$this->renderAuthorInfo(),
+			$this->renderThisDiagram(),
+			$this->renderDiagramFooter(),
 			$this->renderDescription(),
 			$this->renderQualityTags(),
 			$this->renderOntologyTags(),
 			$this->renderBibliography(),
-			$this->renderHistory(), $this->renderXrefs(),
+			$this->renderHistory(),
+			$this->renderXrefs(),
 			$this->renderLinkToFullPathwayPage()
 		];
 	}
@@ -330,7 +333,7 @@ class Content extends TextContent {
 	/**
 	 * @return string svg content
 	 */
-	public static function renderDiagram() {
+	private function renderThisDiagram() {
 		$json = Factory::getCache( "JSON", $this->getPathway() );
 		if ( !$json->isCached() ) {
 			$png = Factory::getCache(
