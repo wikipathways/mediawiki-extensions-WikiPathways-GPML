@@ -348,10 +348,28 @@ class Content extends TextContent {
         )->parse();
 	}
 
+    /**
+     * @param string $pathID Id of path (e.g. "WP4")
+     * @param int|null $rev
+     * @return Status svg content or failure
+     */
+    public static function renderDiagram( $pathID, $rev = null ) {
+        $path = Title::newFromText( $pathID, NS_PATHWAY );
+        if ( !$path ) {
+            return Status::newFatal( "wikipathways-gpml-bad-path" );
+        }
+        if ( !$path->exists() ) {
+            return Status::newFatal( "wikipathways-gpml-path-not-exist" );
+        }
+		$rev = Revision::newFromTitle( $path, $rev );
+		$content = new self( $rev->getContent() );
+        return Status::newGood( $content->renderThisDiagram() );
+    }
+
 	/**
 	 * @return string svg content
 	 */
-	private function renderThisDiagram() {
+	public function renderThisDiagram() {
 		$json = Factory::getCache( "JSON", $this->getPathway() );
 		if ( !$json->isCached() ) {
 			$png = Factory::getCache(
