@@ -113,7 +113,9 @@
 		"WikiPathways\\GPML\\Hook": "src/Hook.php",
 		"WikiPathways\\GPML\\ContentHandler": "src/ContentHandler.php",
 		"WikiPathways\\GPML\\Content": "src/Content.php",
-		"WikiPathways\\GPML\\Widget": "src/Widget.php"
+		"WikiPathways\\GPML\\Widget": "src/Widget.php",
+		"WikiPathways\\GPML\\WidgetSkin": "src/WidgetSkin.php",
+		"WikiPathways\\GPML\\WidgetTemplate": "src/WidgetTemplate.php"
 	},
 	"AjaxExportList": [
 		"WikiPathways\\GPML\\AuthorInfoList::jsGetAuthors"

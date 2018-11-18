@@ -25,14 +25,21 @@
 namespace WikiPathways\GPML;
 
 /**
- * WidgetSkin class for GPML output
+ * BaseTemplate class for the 'widgetoutput' skin
  */
-class WidgetSkin extends SkinApi {
-	public $skinname = 'widgetoutput';
-	public $template = 'WidgetTemplate';
+class WidgetTemplate extends SkinApiTemplate {
 
-	public function setupSkinUserCss( OutputPage $out ) {
-		parent::setupSkinUserCss( $out );
-		$out->addModuleStyles( 'mediawiki.skinning.interface' );
+	public function execute() {
+		$this->html( 'headelement' ) ?>
+
+		<div class="mw-body" role="main">
+			<div class="mw-body-content">
+				<?php $this->html( 'bodytext' ) ?>
+			</div>
+		</div>
+
+		<?php $this->printTrail() ?>
+		</body></html>
+<?php
 	}
 }
