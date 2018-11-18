@@ -51,11 +51,16 @@ error_reporting( $last );
 
 class Widget extends FormlessAction {
 
-	public function __construct( Page $page, IContextSource $context = null ) {
+	public function __construct(
+		Page $page, IContextSource $context = null
+	) {
 		parent::__construct( $page, $context );
 
-		Hooks::register( 'RequestContextCreateSkin', function ( $req, &$skin ) {
-			$skin = SkinFactory::getDefaultInstance()->makeSkin( 'apioutput' );
+		Hooks::register(
+			'RequestContextCreateSkin',
+			function ( $req, &$skin ) {
+				$skin = SkinFactory::getDefaultInstance()
+					  ->makeSkin( 'widgetoutput' );
 		} );
 	}
 
@@ -79,7 +84,10 @@ class Widget extends FormlessAction {
 		$colors = $req->getVal( 'colors' );
 
 		$highlights = " ";
-		if ( ( !is_null( $label ) || !is_null( $xref ) ) && !is_null( $colors ) ) {
+		if (
+			( !is_null( $label ) || !is_null( $xref ) )
+			&& !is_null( $colors )
+		) {
 			$highlights = "[";
 			$selectors = [];
 			if ( !is_null( $label ) ) {
@@ -95,17 +103,26 @@ class Widget extends FormlessAction {
 				if ( is_array( $xref ) ) {
 					foreach ( $xref as $x ) {
 						$xParts = explode( ",", $x );
-						array_push( $selectors, "{\"selector\":\"xref:id:".$xParts[0].",".$xParts[1]."\"," );
+						array_push(
+							$selectors, '{"selector":"xref:id:'
+							. $xParts[0] . "," . $xParts[1] . '",'
+						);
 					}
 				} else {
 					$xrefParts = explode( ",", $xref );
-					array_push( $selectors, "{\"selector\":\"xref:id:".$xrefParts[0].",".$xrefParts[1]."\"," );
+					array_push(
+						$selectors, '{"selector":"xref:id:'
+						. $xrefParts[0] . "," . $xrefParts[1] . '",'
+					);
 				}
 			}
 
 			$colorArray = explode( ",", $colors );
 			$firstColor = $colorArray[0];
-			if ( count( $selectors ) != count( $colorArray ) ) { // if color list doesn't match selector list, then just use first color
+
+			// if color list doesn't match selector list, then just
+			// use first color
+			if ( count( $selectors ) != count( $colorArray ) ) {
 				for ( $i = 0; $i < count( $selectors ); $i++ ) {
 					$colorArray[$i] = $firstColor;
 				}
@@ -113,12 +130,17 @@ class Widget extends FormlessAction {
 
 			// if highlight params received
 			for ( $i = 0; $i < count( $selectors ); $i++ ) {
-				$highlights .= $selectors[$i]."\"backgroundColor\":\"".$colorArray[$i]."\",\"borderColor\":\"".$colorArray[$i]."\"},";
+				$highlights .= $selectors[$i] . '"backgroundColor":"'
+							. $colorArray[$i] . '","borderColor":"'
+							. $colorArray[$i] . '"},';
 			}
 			$highlights .= "]";
 		}
 
-		if ( !isset( $highlights ) || empty( $highlights ) || $highlights == " " ) {
+		if (
+			!isset( $highlights ) || empty( $highlights )
+			|| $highlights == " "
+		) {
 			$highlights = "[]";
 		}
 
@@ -129,34 +151,18 @@ class Widget extends FormlessAction {
 
 		$out->addJsConfigVars( "kaavioHighlights", $highlights );
 
-		$content = Content::newFromTitle( $this->getTitle() );
-		return $content->renderDiagram();
+		return Content::renderDiagram( $this->getTitle() );
 	}
 
-	public function misc2() {
-		/*
-		  <title>WikiPathways Pathway Viewer</title>
-		  </head>
-		  <body>
-		  <wikipathways-pvjs
-		  id="pvjs-widget"
-		  src="<?php echo $gpml ?>"
-		  display-errors="true"
-		  display-warnings="true"
-		  fit-to-container="true"
-		  editor="disabled">'
-		  <img src="<?php echo $png ?>" alt="Diagram for pathway <?php echo $this->getTitle() ?>" width="600" height="420" class="thumbimage">
-		  </wikipathways-pvjs>
-		  <div style="position:absolute;height:0px;overflow:visible;bottom:0;left:15px;">
-		  <div id="logolink">
-		  <?php
-		  echo "<a id='wplink' target='top' href='{$pathway->getFullUrl()}'>View at ";
-		  echo "<img style='border:none' src='$wgScriptPath/extensions/WikiPathways/images/wikipathways_name.png' /></a>";
-		  ?>
-		  </div>
-		  </div>
-		  </body>
-		  </html>
-		*/
+	public static function main() {
+		$context = RequestContext::getMain();
+		$req = $context->getRequest();
+		$out = $context->getOutput();
+		$pathId = $req->getVal( 'id' );
+		$rev = $req->getVal( 'rev' );
+		$widget = new self( $page, $context );
+		$out->addHTML( $widget->onView() );
 	}
 }
+
+Widget::main();
