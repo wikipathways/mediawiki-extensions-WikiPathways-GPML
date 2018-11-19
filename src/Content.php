@@ -29,11 +29,14 @@ use Message;
 use ParserOptions;
 use ParserOutput;
 use RequestContext;
+use Revision;
 use SimpleXMLElement;
 use SpecialPage;
+use Status;
 use TextContent;
 use Title;
 use User;
+use WikiPage;
 use WikiPathways\Organism;
 use WikiPathways\Pathway;
 use WikiPathways\PathwayCache\Factory;
@@ -53,6 +56,7 @@ class Content extends TextContent {
 	private $validationErrors = [];
 	private $wikitext;
 	private $pathway;
+	private $page;
 
 	/**
 	 * @param string $text GPML code.
@@ -93,8 +97,7 @@ class Content extends TextContent {
 		$xml = new DOMDocument();
 		$parsed = $xml->loadXML( $gpml );
 		if ( !$parsed ) {
-			$this->validationErrors[]
-                = "Error: no valid XML provided\n$gpml";
+			$this->validationErrors[] = "Error: no valid XML provided\n$gpml";
 			return false;
 		}
 
@@ -106,16 +109,14 @@ class Content extends TextContent {
 		$xmlNs = $xml->firstChild->getAttribute( 'xmlns' );
 		$schema = Pathway::getSchema( $xmlNs );
 		if ( !$schema ) {
-			$this->validationErrors[]
-                = "Error: no xsd found for $xmlNs\n$gpml";
+			$this->validationErrors[] = "Error: no xsd found for $xmlNs\n$gpml";
 			return false;
 		}
 
 		if ( !$xml->schemaValidate( WPI_SCRIPT_PATH . "/bin/$schema" ) ) {
 			$error = libxml_get_last_error();
 			$this->validationErrors[] = $gpml[$error->line - 1] . "\n";
-			$this->validationErrors[] = str_repeat( '-', $error->column )
-                                      . "^\n";
+			$this->validationErrors[] = str_repeat( '-', $error->column ) . "^\n";
 
 			switch ( $error->level ) {
 			case LIBXML_ERR_WARNING:
@@ -159,8 +160,7 @@ class Content extends TextContent {
 			$species = $match[1];
 			$organisms = array_keys( Organism::listOrganisms() );
 			if ( !in_array( $species, $organisms ) ) {
-				return "The organism '$species' for the pathway is "
-                    . "not supported.";
+				return "The organism '$species' for the pathway is not supported.";
 			}
 		} else {
 			return "The pathway doesn't have an organism attribute.";
@@ -177,9 +177,7 @@ class Content extends TextContent {
 	 *
 	 * @return WikiPathways\ContentHandler\Content
 	 */
-	public function preSaveTransform(
-        Title $title, User $user, ParserOptions $popts
-    ) {
+	public function preSaveTransform( Title $title, User $user, ParserOptions $popts ) {
 		return $this;
 	}
 
@@ -195,29 +193,22 @@ class Content extends TextContent {
 	}
 
 	public function getParserOutput(
-		Title $title, $revId = null, ParserOptions $options = null,
-        $generateHtml = true
+		Title $title, $revId = null, ParserOptions $options = null, $generateHtml = true
 	) {
 		$po = null;
 		try {
 			\MediaWiki\suppressWarnings();
 			$this->parsed = new SimpleXMLElement( $this->getNativeData() );
 			\MediaWiki\restoreWarnings();
-			$this->parsed->registerXPathNamespace(
-                "gpml", "http://pathvisio.org/GPML/2013a"
-            );
+			$this->parsed->registerXPathNamespace( "gpml", "http://pathvisio.org/GPML/2013a" );
 		} catch ( Exception $e ) {
 			// Not XML, use Wikitext
 			\MediaWiki\restoreWarnings();
 			$this->wikitext = new WikiTextContent( $this->getNativeData() );
-			$po = $this->wikitext->getParserOutput(
-                $title, $revId, $options, $generateHtml
-            );
+			$po = $this->wikitext->getParserOutput( $title, $revId, $options, $generateHtml );
 		}
 		if ( $po === null ) {
-			$po = parent::getParserOutput(
-                $title, $revId, $options, $generateHtml
-            );
+			$po = parent::getParserOutput( $title, $revId, $options, $generateHtml );
 		}
 
 		return $po;
@@ -232,10 +223,14 @@ class Content extends TextContent {
 	}
 
 	public function getPathway() {
-		if ( !$this->pathway ) {
+		if ( !$this->pathway && $this->title ) {
 			$this->pathway = Pathway::newFromTitle(
 				$this->title
 			);
+		} elseif ( !$this->title && $this->pathway ) {
+			throw new Exception( "No title!" );
+		} else {
+			throw new Exception( "Uh Oh!" );
 		}
 		return $this->pathway;
 	}
@@ -274,12 +269,10 @@ class Content extends TextContent {
 			$html = '';
 		}
 
-		// These should be closer to where they modules that they go
-		// with are invoked.
-		$output->addModules( [
-            "wpi.AuthorInfo", "wpi.Pathway", "wpi.toggleButton",
-            "wpi.PageEditor"
-        ] );
+		// These should be closer to where they modules that they go with are invoked.
+		$output->addModules(
+			[ "wpi.AuthorInfo", "wpi.Pathway", "wpi.toggleButton", "wpi.PageEditor" ]
+		);
 
 		$output->setTitleText( $this->getTitle() );
 		$output->setText( $html );
@@ -292,9 +285,7 @@ class Content extends TextContent {
 		if ( $this->wikitext ) {
 			return $this->wikitext->getHtml();
 		}
-		return wfMessage( "wp-gpml-page-layout" )->params(
-            $this->getSections()
-        )->text();
+		return wfMessage( "wp-gpml-page-layout" )->params( $this->getSections() )->text();
 	}
 
 	/**
@@ -343,34 +334,47 @@ class Content extends TextContent {
 	 * @return method name
 	 */
 	private function renderTitle() {
-		return wfMessage( 'wp-gpml-title' )->params(
-            $this->getPathway()->getName()
-        )->parse();
+		return wfMessage( 'wp-gpml-title' )->params( $this->getPathway()->getName() )
+		->parse();
 	}
 
-    /**
-     * @param string $pathID Id of path (e.g. "WP4")
-     * @param int|null $rev
-     * @return Status svg content or failure
-     */
-    public static function renderDiagram( $pathID, $rev = null ) {
-        $path = Title::newFromText( $pathID, NS_PATHWAY );
-        if ( !$path ) {
-            return Status::newFatal( "wikipathways-gpml-bad-path" );
-        }
-        if ( !$path->exists() ) {
-            return Status::newFatal( "wikipathways-gpml-path-not-exist" );
-        }
-		$rev = Revision::newFromTitle( $path, $rev );
-		$content = new self( $rev->getContent() );
-        return Status::newGood( $content->renderThisDiagram() );
+    public static function newFromPathId( $pathId ) {
+		$that->title = Title::newFromText( $pathId, NS_PATHWAY );
+		if ( !$that->title ) {
+			return Status::newFatal( "wikipathways-gpml-bad-path" );
+		}
+		if ( !$that->title->exists() ) {
+			return Status::newFatal( "wikipathways-gpml-path-not-exist" );
+		}
+        return $that;
     }
+
+	/**
+	 * @param string $pathID Id of path (e.g. "WP4")
+	 * @param int|null $rev
+	 * @return Status svg content or failure
+	 */
+	public static function renderDiagram( $pathID, $rev = null ) {
+        $that = self::newFromPathId( $pathID );
+        if( $that instanceOf Status ) {
+            return $that;
+        }
+		$that->page = WikiPage::factory( $that->title );
+		if ( $rev ) {
+			$rev = Revision::newFromTitle( $that->title, $rev );
+			$content = $rev->getContent();
+		} else {
+			$content = $that->page->getContent();
+		}
+		return Status::newGood( [ $that->page, $content->renderThisDiagram() ] );
+	}
 
 	/**
 	 * @return string svg content
 	 */
 	public function renderThisDiagram() {
 		$json = Factory::getCache( "JSON", $this->getPathway() );
+		$this->title = $this->getPathway()->getTitleObject();
 		if ( !$json->isCached() ) {
 			$png = Factory::getCache(
 				"PNG", $this->getPathway()
@@ -411,9 +415,7 @@ class Content extends TextContent {
 			Html::rawElement(
 				"a", [ "id" => "download-from-page", "href" => "#",
 					   "class" => "button" ],
-				Html::rawElement(
-                    "span", [], wfMessage( "wp-gpml-launch-editor" )
-                )
+				Html::rawElement( "span", [], wfMessage( "wp-gpml-launch-editor" ) )
 			)
 		);
 	}
@@ -421,10 +423,7 @@ class Content extends TextContent {
 	private function renderEditButton() {
 		$this->output->addModules( [ "wpi.openInPathVisio" ] );
 		// Create edit button
-		if (
-            $this->user->isLoggedIn()
-            && $this->getPathway()->getTitleObject()->userCan( 'edit' )
-        ) {
+		if ( $this->user->isLoggedIn() && $this->getPathway()->getTitleObject()->userCan( 'edit' ) ) {
 			return $this->renderLoggedInEditButton();
 		} else {
 			return $this->renderCannotEditButton();
@@ -434,25 +433,21 @@ class Content extends TextContent {
 	private function renderCannotEditButton() {
 		if ( !$this->user->isLoggedIn() ) {
 			$href = SpecialPage::getTitleFor( 'Userlogin' )->getFullURL( [
-				'returnto' => $this->getPathway()->getTitleObject()
-                ->getPrefixedURL()
+				'returnto' => $this->getPathway()->getTitleObject()->getPrefixedURL()
 			] );
 			$label = "Log in to edit pathway";
 		} elseif ( wfReadOnly() ) {
 			$href = "";
 			$label = "Database locked";
-		} elseif (
-            !$this->getPathway()->getTitleObject()->userCan( 'edit' )
-        ) {
+		} elseif ( !$this->getPathway()->getTitleObject()->userCan( 'edit' ) ) {
 			$href = "";
 			$label = "Editing is disabled";
 		}
 		return Html::rawElement(
 			"div", [ "id" => "edit-button", "style" => "float: left" ],
 			Html::rawElement(
-				"a", [
-                    "class" => "button", "href" => $href, "title" => $label
-                ], Html::rawElement( "span", [], $label )
+				"a", [ "class" => "button", "href" => $href, "title" => $label ],
+				Html::rawElement( "span", [], $label )
 			)
 		);
 	}
@@ -524,8 +519,10 @@ class Content extends TextContent {
 	private function renderAuthorInfo() {
 		$msg = wfMessage( "wp-gpml-authorinfo" );
 		$revId = $this->request->getInt( 'oldid' );
-		if ( !$revId ) {
+		if ( !$revId && $this->title ) {
 			$revId = $this->title->getLatestRevID();
+		} elseif ( !$this->title ) {
+			throw new Exception( "No Title" );
 		}
 		return $msg->params(
 			$this->title->getArticleID(), $revId, 5, false
@@ -552,13 +549,9 @@ class Content extends TextContent {
 		$downloadLinks = "";
 		foreach ( $type as $name => $format ) {
 			$downloadLinks .= Html::rawElement(
-				"li", [], Html::rawElement( "a", [
-                        "href" => self::getDownloadURL(
-                            $this->getPathway(), $format
-                        ) ],
-					wfMessage( "wp-gpml-download-link-text" )->params(
-                        $name, $format
-                    )
+				"li", [], Html::rawElement(
+					"a", [ "href" => self::getDownloadURL( $this->getPathway(), $format ) ],
+					wfMessage( "wp-gpml-download-link-text" )->params( $name, $format )
 				)
 			);
 		}
@@ -571,13 +564,9 @@ class Content extends TextContent {
 					Html::rawElement(
 						"li", [],
 						Html::rawElement(
-                            "a", [
-                                "href" => "#nogo2",
-                                "class" => "button buttondown"
-                            ], Html::rawElement(
-                                "span", [], wfMessage( "wp-gpml-download" )
-                            ) )
-                        . Html::rawElement( "ul", [], $downloadLinks )
+							"a", [ "href" => "#nogo2", "class" => "button buttondown" ],
+							Html::rawElement( "span", [], wfMessage( "wp-gpml-download" ) )
+						) . Html::rawElement( "ul", [], $downloadLinks )
 					)
 				)
 			)
@@ -603,8 +592,7 @@ class Content extends TextContent {
 	}
 
 	/**
-	 * Convenience function for extracting the text content of a
-	 * single element.
+	 * Convenience function for extracting the text content of a single element.
 	 *
 	 * @param string $path xpath to which "/text()[1]" will be added.
 	 * @return string
@@ -630,8 +618,7 @@ class Content extends TextContent {
 		$msg = wfMessage( "wp-gpml-description" );
 		return $msg->params(
 			$this->xpathContent(
-				"/gpml:Pathway/gpml:Comment[@Source="
-                . "'WikiPathways-description']"
+				"/gpml:Pathway/gpml:Comment[@Source='WikiPathways-description']"
 			)
 		)->toString( Message::FORMAT_PARSE );
 	}
@@ -674,19 +661,13 @@ class Content extends TextContent {
 		$text = $this->getNativeData();
 		if ( strpos( $text, '/* #REDIRECT */' ) === 0 ) {
 			// Extract the title from the url
-			preg_match(
-                '/title=(.*?)\\\\u0026action=raw/', $text, $matches
-            );
+			preg_match( '/title=(.*?)\\\\u0026action=raw/', $text, $matches );
 			if ( isset( $matches[1] ) ) {
 				$title = \Title::newFromText( $matches[1] );
 				if ( $title ) {
-					// Have a title, check that the current content
-					// equals what the redirect content should be
-					if (
-                        $this->equals(
-                            $this->getContentHandler()->
-                            makeRedirectContent( $title ) )
-                    ) {
+					// Have a title, check that the current content equals what
+					// the redirect content should be
+					if ( $this->equals( $this->getContentHandler()->makeRedirectContent( $title ) ) ) {
 						$this->redirectTarget = $title;
 					}
 				}

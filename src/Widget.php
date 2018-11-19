@@ -33,10 +33,13 @@
 namespace WikiPathways\GPML;
 
 use DerivativeContext;
+use ErrorPageError;
 use Hooks;
 use IContextSource;
 use FormlessAction;
 use Page;
+use RequestContext;
+use Revision;
 use SkinFactory;
 use Title;
 use WikiPathways\Pathway;
@@ -50,9 +53,10 @@ ini_set( 'display_errors', $oldVal );
 error_reporting( $last );
 
 class Widget extends FormlessAction {
+	private $svg;
 
 	public function __construct(
-		Page $page, IContextSource $context = null
+		$svg, Page $page, IContextSource $context = null
 	) {
 		parent::__construct( $page, $context );
 
@@ -62,6 +66,7 @@ class Widget extends FormlessAction {
 				$skin = SkinFactory::getDefaultInstance()
 					  ->makeSkin( 'widgetoutput' );
 		} );
+		$this->svg = $svg;
 	}
 
 	public function requiresWrite() {
@@ -93,10 +98,14 @@ class Widget extends FormlessAction {
 			if ( !is_null( $label ) ) {
 				if ( is_array( $label ) ) {
 					foreach ( $label as $l ) {
-						array_push( $selectors, "{\"selector\":\"$l\"," );
+						array_push(
+							$selectors, '{"selector":"' . $l . '",'
+						);
 					}
 				} else {
-					array_push( $selectors, "{\"selector\":\"$label\"," );
+					array_push(
+						$selectors, '{"selector":"' . $label . '",'
+					);
 				}
 			}
 			if ( !is_null( $xref ) ) {
@@ -151,17 +160,23 @@ class Widget extends FormlessAction {
 
 		$out->addJsConfigVars( "kaavioHighlights", $highlights );
 
-		return Content::renderDiagram( $this->getTitle() );
+		return $this->svg;
 	}
 
 	public static function main() {
 		$context = RequestContext::getMain();
 		$req = $context->getRequest();
 		$out = $context->getOutput();
-		$pathId = $req->getVal( 'id' );
-		$rev = $req->getVal( 'rev' );
-		$widget = new self( $page, $context );
-		$out->addHTML( $widget->onView() );
+		$content = Content::renderDiagram(
+			$req->getVal( 'id' ), $req->getVal( 'rev' )
+		);
+		if ( $content->isOk() ) {
+			list( $page, $svg ) = $content->getValue();
+			$widget = new self( $svg, $page, $context );
+			$out->addHTML( $widget->onView() );
+		} else {
+			throw new ErrorPageError( "woo", $content->getMessage() );
+		}
 	}
 }
 
