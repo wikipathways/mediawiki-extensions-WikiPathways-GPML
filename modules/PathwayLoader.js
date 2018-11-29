@@ -7,9 +7,13 @@ window.addEventListener('load', function() {
 			theme = urlParams.get( 'theme' ).replace( /[^a-zA-Z0-9]/, '' );
 		}
 	}
-	new Pvjs( ".Container", { theme: theme || 'plain',
-							  pathway: jsonData.pathway,
-							  entitiesById: jsonData.entitiesById,
-							  onReady: function() {}
-							} );
+	new Pvjs( ".Container", { theme: theme || 'dark',
+				  pathway: jsonData.pathway,
+				  entitiesById: jsonData.entitiesById,
+				  onReady: function() {}
+				} );
+  // TODO: this is a kludge. Fix it in pvjs.
+  document.querySelectorAll(".Container").forEach(function(el) {
+    el.style.setProperty('background-color', '#3d3d3d');
+  });
 });
