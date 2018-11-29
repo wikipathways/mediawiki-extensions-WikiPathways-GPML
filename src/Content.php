@@ -325,7 +325,7 @@ class Content extends TextContent {
 		$this->output->addModuleStyles( [ "wpi.PathwayLoader.css" ] );
 		$this->output->addModules( [ "wpi.PathwayLoader.js" ] );
 
-		$svg = Factory::getCache( "SVG", $pathway );
+		$svg = Factory::getCache( "REACT", $pathway );
 		if ( $svg->isCached() ) {
 			return wfMessage( "wp-gpml-diagram" )->params( $svg->fetchText() )
 				->plain();
