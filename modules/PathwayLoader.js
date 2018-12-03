@@ -7,7 +7,7 @@ window.addEventListener('load', function() {
 			theme = urlParams.get( 'theme' ).replace( /[^a-zA-Z0-9]/, '' );
 		}
 	}
-	new Pvjs( ".Container", { theme: theme || 'dark',
+	new Pvjs( ".Container", { theme: theme || 'plain',
 				  pathway: jsonData.pathway,
 				  entitiesById: jsonData.entitiesById,
 				  onReady: function() {}
