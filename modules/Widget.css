@@ -1,25 +1,42 @@
-	a#wplink {
+.mw-body {
+	margin-left: 0px;
+	padding: 0px;
+	border: unset;
+}
+
+#mw-page-base, #mw-head-base, #mw-navigation, #firstHeading, #footer, #contentSub {
+	display: none;
+}
+
+body {
+	background-color: unset;
+}
+
+a#wplink {
 	text-decoration:none;
 	font-family:serif;
 	color:black;
 	font-size:12px;
-	}
-	#logolink {
-		float:right;
-		top:-20px;
-		left: -10px;
-		position:relative;
-		z-index:2;
-		opacity: 0.5;
-	}
-	html, body {
-		width:100%;
-		height:100%;
-	}
-	#pvjs-widget {
-		top:0;
-		left:0;
-		font-size:12px;
-		width:100%;
-		height:inherit;
-	}
+}
+
+#logolink {
+	float:right;
+	top:-20px;
+	left: -10px;
+	position: relative;
+	z-index:2;
+	opacity: 0.5;
+}
+
+html, body {
+	width:100%;
+	height:100%;
+}
+
+#pvjs-widget {
+	top:0;
+	left:0;
+	font-size:12px;
+	width:100%;
+	height:inherit;
+}

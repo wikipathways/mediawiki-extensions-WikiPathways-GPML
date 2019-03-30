@@ -47,7 +47,7 @@ use WikiPathways\PathwayCache\Factory;
 use WikiPathways\PathwayViewer;
 
 $last = error_reporting( 0 );
-$oldVal = ini_set( 'display_errors', 0 ); // Hide E_NOTICE from multiple MEDIAWIKI defs
+$oldVal = ini_set( 'display_errors', '0' ); // Hide E_NOTICE from multiple MEDIAWIKI defs
 require getenv( "MW_INSTALL_PATH" ) . '/includes/WebStart.php';
 ini_set( 'display_errors', $oldVal );
 error_reporting( $last );
@@ -56,16 +56,16 @@ class Widget extends FormlessAction {
 	private $svg;
 
 	public function __construct(
-		$svg, Page $page, IContextSource $context = null
+		Page $page, IContextSource $context = null
 	) {
 		parent::__construct( $page, $context );
 
-		Hooks::register(
-			'RequestContextCreateSkin',
-			function ( $req, &$skin ) {
-				$skin = SkinFactory::getDefaultInstance()
-					  ->makeSkin( 'widgetoutput' );
-		} );
+#		Hooks::register(
+#			'RequestContextCreateSkin',
+#			function ( $req, &$skin ) {
+#				$skin = SkinFactory::getDefaultInstance()
+#					  ->makeSkin( 'widgetoutput' );
+#		} );
 		$this->svg = $svg;
 	}
 
@@ -81,6 +81,8 @@ class Widget extends FormlessAction {
 		header( "X-XSS-Protection: 0" );
 		$out = $this->getOutput();
 		$req = $this->getRequest();
+		#$out->setArticleBodyOnly( true );
+		$out->clearSubtitle();
 		$out->addModules( [ "wpi.widget" ] );
 
 		$version = $req->getVal( 'rev', 0 );
@@ -137,11 +139,18 @@ class Widget extends FormlessAction {
 				}
 			}
 
+			$selectorCount = count($selectors);
 			// if highlight params received
-			for ( $i = 0; $i < count( $selectors ); $i++ ) {
+			for ( $i = 0; $i < $selectorCount - 1; $i++ ) {
 				$highlights .= $selectors[$i] . '"backgroundColor":"'
 							. $colorArray[$i] . '","borderColor":"'
 							. $colorArray[$i] . '"},';
+			}
+			# TODO: use join instead of handling the last one as a special case
+			if ( $selectorCount > 0 ) {
+				$highlights .= $selectors[$selectorCount - 1] . '"backgroundColor":"'
+						. $colorArray[$selectorCount - 1] . '","borderColor":"'
+						. $colorArray[$selectorCount - 1] . '"}';
 			}
 			$highlights .= "]";
 		}
@@ -153,10 +162,10 @@ class Widget extends FormlessAction {
 			$highlights = "[]";
 		}
 
-		$pathway = Pathway::newFromTitle( $this->getTitle() );
-		if ( $version ) {
-			$pathway->setActiveRevision( $version );
-		}
+#		$pathway = Pathway::newFromTitle( $this->getTitle() );
+#		if ( $version ) {
+#			$pathway->setActiveRevision( $version );
+#		}
 
 		$out->addJsConfigVars( "kaavioHighlights", $highlights );
 
@@ -167,16 +176,19 @@ class Widget extends FormlessAction {
 		$context = RequestContext::getMain();
 		$req = $context->getRequest();
 		$out = $context->getOutput();
-		$content = Content::renderDiagram(
-			$req->getVal( 'id' ), $req->getVal( 'rev' )
-		);
-		if ( $content->isOk() ) {
-			list( $page, $svg ) = $content->getValue();
-			$widget = new self( $svg, $page, $context );
-			$out->addHTML( $widget->onView() );
-		} else {
-			throw new ErrorPageError( "woo", $content->getMessage() );
-		}
+		$title = $context->getTitle();
+		$wpid = $title->getText();
+		$revid = $title->getLatestRevID();
+		$pathway = new Pathway($wpid, $revid);
+		#var_dump(get_class_methods($pathway));
+		$out->addModuleStyles( [ "wpi.PathwayLoader.css" ] );
+		$svg = Factory::getCache( "PVJSSVG", $pathway );
+		$out->addHTML( '<div class="Container" style="height: 600px; width: 100%;">' . $svg->render() . '</div>' );
+
+		$json = Factory::getCache( "JSON", $pathway );
+		$out->addJsConfigVars( "pvjsString", $json->render() );
+
+		$out->addModules( [ "wpi.PathwayLoader.js" ] );
 	}
 }
 

@@ -49,10 +49,7 @@
 	},
 	"ResourceModules": {
 		"wpi.widget": {
-			"styles": "Widget.css",
-			"dependencies": [
-				"jquery", "wpi.pvjs"
-			]
+			"styles": "Widget.css"
 		},
 		"wpi.PathwayLoader.js": {
 			"scripts": [
